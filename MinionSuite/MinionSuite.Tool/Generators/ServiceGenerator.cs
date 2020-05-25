@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using MinionSuite.Tool.Helpers;
 using MinionSuite.Tool.Properties;
 
 namespace MinionSuite.Tool.Generators
@@ -28,10 +29,10 @@ namespace MinionSuite.Tool.Generators
             var metadata = new ModelMetadata(argReader.ModelPath);
 
             string interfaceContent = GetInterfaceContent(argReader, metadata);
-            Helper.SaveToOutput(argReader.OutputFolder, $"I{metadata.Name}Service.cs", interfaceContent);
+            FileHelper.SaveToOutput(argReader.OutputFolder, $"I{metadata.Name}Service.cs", interfaceContent);
 
             string classContent = GetClassContent(argReader, metadata);
-            Helper.SaveToOutput(argReader.OutputFolder, $"{metadata.Name}Service.cs", classContent);
+            FileHelper.SaveToOutput(argReader.OutputFolder, $"{metadata.Name}Service.cs", classContent);
         }
 
         /// <summary>

@@ -1,21 +1,13 @@
 ﻿using System;
 using System.IO;
 
-namespace MinionSuite.Tool
+namespace MinionSuite.Tool.Helpers
 {
     /// <summary>
-    /// Class with helper methods
+    /// Class with file helper methods
     /// </summary>
-    public static class Helper
+    public static class FileHelper
     {
-        /// <summary>
-        /// Indicates if a type represents a string
-        /// </summary>
-        /// <param name="type">The type to check</param>
-        /// <returns>True if the type represents a string, otherwise false</returns>
-        public static bool IsStringType(string type) =>
-            type.ToLower() == "string" || type.ToLower() == "system.string";
-
         /// <summary>
         /// Saves content to an output file
         /// </summary>

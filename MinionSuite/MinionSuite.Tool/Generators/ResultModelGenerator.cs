@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using MinionSuite.Tool.Helpers;
 
 namespace MinionSuite.Tool.Generators
 {
@@ -52,7 +53,7 @@ namespace MinionSuite.Tool.Generators
             builder.AppendLine("    }");
             builder.AppendLine("}");
 
-            Helper.SaveToOutput(argReader.OutputFolder, "ResultModel.cs", builder.ToString());
+            FileHelper.SaveToOutput(argReader.OutputFolder, "ResultModel.cs", builder.ToString());
         }
 
         /// <summary>
