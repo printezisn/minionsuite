@@ -5,6 +5,7 @@ using System.Linq;
 using Humanizer;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using MinionSuite.Tool.Properties;
 
 namespace MinionSuite.Tool
 {
@@ -13,18 +14,6 @@ namespace MinionSuite.Tool
     /// </summary>
     public class ModelMetadata
     {
-        private readonly HashSet<string> PRIMITIVE_TYPES = new HashSet<string>()
-        {
-            "bool", "Boolean", "System.Boolean", "byte", "Byte", "System.Byte",
-            "sbyte", "SByte", "System.SByte", "char", "Char", "System.Char",
-            "decimal", "Decimal", "System.Decimal", "double", "Double", "System.Double",
-            "float", "Single", "System.Single", "int", "Int32", "System.Int32",
-            "uint", "UInt32", "System.UInt32", "long", "Int64", "System.Int64",
-            "ulong", "UInt64", "System.UInt64", "short", "Int16", "System.Int16",
-            "ushort", "UInt16", "System.UInt16", "string", "String", "System.String",
-            "DateTime", "System.DateTime", "TimeSpan", "System.TimeSpan"
-        };
-
         private readonly HashSet<string> KEY_ATTRIBUTES = new HashSet<string>()
         {
             "[Key]", "[System.ComponentModel.DataAnnotations.Key]"
@@ -46,9 +35,9 @@ namespace MinionSuite.Tool
         public string Namespace { get; private set; }
 
         /// <summary>
-        /// The list of properties to care about (key: name, value: type)
+        /// The list of properties to care about (key: name, value: property)
         /// </summary>
-        public IDictionary<string, string> Properties { get; private set; }
+        public IDictionary<string, IProperty> Properties { get; private set; }
 
         /// <summary>
         /// The name of the key property
@@ -56,9 +45,9 @@ namespace MinionSuite.Tool
         public string KeyName { get; private set; }
 
         /// <summary>
-        /// The type of the key property
+        /// The key property
         /// </summary>
-        public string KeyType => Properties[KeyName];
+        public IProperty KeyProperty => Properties[KeyName];
 
         /// <summary>
         /// Creates a new instance
@@ -82,14 +71,15 @@ namespace MinionSuite.Tool
             var classNode = rootNode.DescendantNodes()
                 .OfType<ClassDeclarationSyntax>()
                 .FirstOrDefault();
-            var propertyNodes = classNode.DescendantNodes()
-                .OfType<PropertyDeclarationSyntax>()
-                .Where(w => PRIMITIVE_TYPES.Contains(w.Type.ToString()));
+            var propertyNodes = classNode.DescendantNodes().OfType<PropertyDeclarationSyntax>();
 
             Name = classNode.Identifier.Text;
             PluralName = Name.Pluralize();
             Namespace = namespaceNode.Name.ToString();
-            Properties = propertyNodes.ToDictionary(d => d.Identifier.ValueText, d => d.Type.ToString());
+            Properties = propertyNodes
+                .Select(s => PropertyFactory.GetProperty(s.Identifier.ValueText, s.Type.ToString()))
+                .Where(w => w != null)
+                .ToDictionary(d => d.Name, d => d);
             KeyName = propertyNodes
                 .FirstOrDefault(f => f.AttributeLists.Any(a => KEY_ATTRIBUTES.Contains(a.ToString())))
                 ?.Identifier.ValueText;

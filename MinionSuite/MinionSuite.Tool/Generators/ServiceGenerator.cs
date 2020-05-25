@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using MinionSuite.Tool.Properties;
 
 namespace MinionSuite.Tool.Generators
 {
@@ -76,10 +77,10 @@ namespace MinionSuite.Tool.Generators
             builder.AppendLine("    {");
             builder.AppendLine($"        Task<ResultModel<{metadata.Name}>> CreateAsync({metadata.Name} entity);");
             builder.AppendLine($"        Task DeleteAsync({metadata.Name} entity);");
-            builder.AppendLine($"        Task<{metadata.Name}> GetAsync({metadata.KeyType} key);");
+            builder.AppendLine($"        Task<{metadata.Name}> GetAsync({metadata.KeyProperty.TypeName} key);");
             builder.AppendLine($"        Task<List<{metadata.Name}>> GetAllAsync();");
             builder.AppendLine($"        Task<PageModel<{metadata.Name}>> GetAllAsync(int page, int pageSize, string sortField, bool asc);");
-            if (metadata.Properties.Values.Any(a => Helper.IsStringType(a)))
+            if (metadata.Properties.Values.Any(a => a is StringProperty))
             {
                 builder.AppendLine($"        Task<List<{metadata.Name}>> SearchAsync(string term);");
                 builder.AppendLine($"        Task<PageModel<{metadata.Name}>> SearchAsync(string term, int page, int pageSize, string sortField, bool asc);");
@@ -95,9 +96,9 @@ namespace MinionSuite.Tool.Generators
         {
             var builder = new StringBuilder();
 
-            string searchQuery = string.Join(" || ", metadata.Properties
-                .Where(w => Helper.IsStringType(w.Value))
-                .Select(s => $"w.{s.Key}.Contains(term)"));
+            string searchQuery = string.Join(" || ", metadata.Properties.Values
+                .Where(w => w is StringProperty)
+                .Select(s => $"w.{s.Name}.Contains(term)"));
 
             builder.AppendLine("using System;");
             builder.AppendLine("using System.Collections.Generic;");
@@ -139,7 +140,7 @@ namespace MinionSuite.Tool.Generators
             builder.AppendLine("            return _context.SaveChangesAsync();");
             builder.AppendLine("        }");
             builder.AppendLine();
-            builder.AppendLine($"        public virtual Task<{metadata.Name}> GetAsync({metadata.KeyType} key)");
+            builder.AppendLine($"        public virtual Task<{metadata.Name}> GetAsync({metadata.KeyProperty.TypeName} key)");
             builder.AppendLine("        {");
             builder.AppendLine($"            return _context.{metadata.PluralName}.FindAsync(key).AsTask();");
             builder.AppendLine("        }");
