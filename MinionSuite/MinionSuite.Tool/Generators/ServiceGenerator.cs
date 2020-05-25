@@ -52,7 +52,7 @@ namespace MinionSuite.Tool.Generators
             builder.AppendLine("  -o|--output <path>:\tThe path to the output folder (default: .).");
             builder.AppendLine("  -gpm|--generate-page-model:\tGenerate page model.");
             builder.AppendLine("  -grm|--generate-result-model:\tGenerate result model.");
-            builder.AppendLine("  -db|--db-context:\tThe database context class.");
+            builder.AppendLine("  -db <class name>|--db-context <class name>:\tThe database context class.");
 
             Console.WriteLine(builder.ToString());
         }
