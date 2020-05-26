@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MinionSuiteExample.Web.Models
 {
-    public class PageModel<T>
+    public class PageModel<T> : IPageModel, IEnumerable<T>
     {
         public IEnumerable<T> Collection { get; private set; }
         public int TotalItems { get; private set; }
@@ -14,15 +15,8 @@ namespace MinionSuiteExample.Web.Models
         public int Page { get; private set; }
         public int PageSize { get; private set; }
 
-        public bool IsFirstPage
-        {
-            get => Page == 1;
-        }
-
-        public bool IsLastPage
-        {
-            get => Page == TotalPages;
-        }
+        public bool IsFirstPage => Page == 1;
+        public bool IsLastPage => Page == TotalPages;
 
         private PageModel()
         {
@@ -40,6 +34,16 @@ namespace MinionSuiteExample.Web.Models
             pageModel.Collection = await query.Skip((pageModel.Page - 1) * pageModel.PageSize).Take(pageModel.PageSize).ToListAsync();
 
             return pageModel;
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return Collection.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return Collection.GetEnumerator();
         }
     }
 }

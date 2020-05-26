@@ -15,22 +15,22 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Collection.First().Title)
+                @Html.DisplayNameFor(model => model.First().Title)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Collection.First().Body)
+                @Html.DisplayNameFor(model => model.First().Body)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Collection.First().CreatedAt)
+                @Html.DisplayNameFor(model => model.First().CreatedAt)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Collection.First().UpdatedAt)
+                @Html.DisplayNameFor(model => model.First().UpdatedAt)
             </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.Collection) {
+@foreach (var item in Model) {
         <tr>
             <td>
                 @Html.DisplayFor(modelItem => item.Title)

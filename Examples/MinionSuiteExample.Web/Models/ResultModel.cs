@@ -9,7 +9,7 @@ namespace MinionSuiteExample.Web.Models
         public T Result { get; private set; }
         public IEnumerable<string> Errors { get; private set; }
 
-        public bool IsSuccess { get => !Errors.Any(); }
+        public bool IsSuccess => !Errors.Any();
 
         public ResultModel(T result, IEnumerable<string> errors)
         {

@@ -10,7 +10,7 @@ namespace MinionSuiteExample.Web.Services
 {
     public class PostService : IPostService
     {
-        private ApplicationDbContext _context;
+        private readonly ApplicationDbContext _context;
 
         public PostService(ApplicationDbContext context)
         {
@@ -88,38 +88,38 @@ namespace MinionSuiteExample.Web.Services
                 case "Title":
                     query = asc
                         ? _context.Posts
-                              .OrderBy(o => o.Title)
-                              .ThenBy(o => o.Id)
+                            .OrderBy(o => o.Title)
+                            .ThenBy(o => o.Id)
                         : _context.Posts
-                              .OrderByDescending(o => o.Title)
-                              .ThenBy(o => o.Id);
+                            .OrderByDescending(o => o.Title)
+                            .ThenBy(o => o.Id);
                     break;
                 case "Body":
                     query = asc
                         ? _context.Posts
-                              .OrderBy(o => o.Body)
-                              .ThenBy(o => o.Id)
+                            .OrderBy(o => o.Body)
+                            .ThenBy(o => o.Id)
                         : _context.Posts
-                              .OrderByDescending(o => o.Body)
-                              .ThenBy(o => o.Id);
+                            .OrderByDescending(o => o.Body)
+                            .ThenBy(o => o.Id);
                     break;
                 case "CreatedAt":
                     query = asc
                         ? _context.Posts
-                              .OrderBy(o => o.CreatedAt)
-                              .ThenBy(o => o.Id)
+                            .OrderBy(o => o.CreatedAt)
+                            .ThenBy(o => o.Id)
                         : _context.Posts
-                              .OrderByDescending(o => o.CreatedAt)
-                              .ThenBy(o => o.Id);
+                            .OrderByDescending(o => o.CreatedAt)
+                            .ThenBy(o => o.Id);
                     break;
                 case "UpdatedAt":
                     query = asc
                         ? _context.Posts
-                              .OrderBy(o => o.UpdatedAt)
-                              .ThenBy(o => o.Id)
+                            .OrderBy(o => o.UpdatedAt)
+                            .ThenBy(o => o.Id)
                         : _context.Posts
-                              .OrderByDescending(o => o.UpdatedAt)
-                              .ThenBy(o => o.Id);
+                            .OrderByDescending(o => o.UpdatedAt)
+                            .ThenBy(o => o.Id);
                     break;
             }
 
