@@ -14,5 +14,6 @@
   <ItemGroup>
     <Folder Include="Properties\" />
     <Folder Include="Helpers\" />
+    <Folder Include="Extensions\" />
   </ItemGroup>
 </Project>

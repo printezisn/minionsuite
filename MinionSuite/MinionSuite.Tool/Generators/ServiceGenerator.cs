@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using MinionSuite.Tool.Extensions;
 using MinionSuite.Tool.Helpers;
 using MinionSuite.Tool.Properties;
 
@@ -42,17 +43,18 @@ namespace MinionSuite.Tool.Generators
         {
             var builder = new StringBuilder();
 
-            builder.AppendLine("Usage: minionsuite servicegen [parameters]");
-            builder.AppendLine();
-            builder.AppendLine("Generates a service layer based on a model class.");
-            builder.AppendLine();
-            builder.AppendLine("Parameters:");
-            builder.AppendLine("  -m|--model-path <path>:\tThe path to the model class.");
-            builder.AppendLine("  -ns|--namespace <name>:\tThe namespace of the generated classes.");
-            builder.AppendLine("  -o|--output <path>:\tThe path to the output folder (default: .).");
-            builder.AppendLine("  -gpm|--generate-page-model:\tGenerate page model.");
-            builder.AppendLine("  -grm|--generate-result-model:\tGenerate result model.");
-            builder.AppendLine("  -db <class name>|--db-context <class name>:\tThe database context class.");
+            builder
+                .AppendLine("Usage: minionsuite servicegen [parameters]")
+                .AppendLine()
+                .AppendLine("Generates a service layer based on a model class.")
+                .AppendLine()
+                .AppendLine("Parameters:")
+                .AppendLine("  -m|--model-path <path>:\tThe path to the model class.")
+                .AppendLine("  -ns|--namespace <name>:\tThe namespace of the generated classes.")
+                .AppendLine("  -o|--output <path>:\tThe path to the output folder (default: .).")
+                .AppendLine("  -gpm|--generate-page-model:\tGenerate page model.")
+                .AppendLine("  -grm|--generate-result-model:\tGenerate result model.")
+                .AppendLine("  -db <class name>|--db-context <class name>:\tThe database context class.");
 
             Console.WriteLine(builder.ToString());
         }
@@ -67,32 +69,43 @@ namespace MinionSuite.Tool.Generators
         {
             var builder = new StringBuilder();
 
-            builder.AppendLine("using System;");
-            builder.AppendLine("using System.Collections.Generic;");
-            builder.AppendLine("using System.Threading.Tasks;");
-            builder.AppendLine($"using {metadata.Namespace};");
-            builder.AppendLine();
-            builder.AppendLine($"namespace {argReader.Namespace}");
-            builder.AppendLine("{");
-            builder.AppendLine($"    public interface I{metadata.Name}Service");
-            builder.AppendLine("    {");
-            builder.AppendLine($"        Task<ResultModel<{metadata.Name}>> CreateAsync({metadata.Name} entity);");
-            builder.AppendLine($"        Task DeleteAsync({metadata.Name} entity);");
-            builder.AppendLine($"        Task<{metadata.Name}> GetAsync({metadata.KeyProperty.TypeName} key);");
-            builder.AppendLine($"        Task<List<{metadata.Name}>> GetAllAsync();");
-            builder.AppendLine($"        Task<PageModel<{metadata.Name}>> GetAllAsync(int page, int pageSize, string sortField, bool asc);");
+            builder
+                .AppendNestedLine(0, "using System;")
+                .AppendNestedLine(0, "using System.Collections.Generic;")
+                .AppendNestedLine(0, "using System.Threading.Tasks;")
+                .AppendNestedLine(0, $"using {metadata.Namespace};")
+                .AppendLine()
+                .AppendNestedLine(0, $"namespace {argReader.Namespace}")
+                .AppendNestedLine(0, "{")
+                .AppendNestedLine(1, $"public interface I{metadata.Name}Service")
+                .AppendNestedLine(1, "{")
+                .AppendNestedLine(2, $"Task<ResultModel<{metadata.Name}>> CreateAsync({metadata.Name} entity);")
+                .AppendNestedLine(2, $"Task DeleteAsync({metadata.Name} entity);")
+                .AppendNestedLine(2, $"Task<{metadata.Name}> GetAsync({metadata.KeyProperty.TypeName} key);")
+                .AppendNestedLine(2, $"Task<List<{metadata.Name}>> GetAllAsync();")
+                .AppendNestedLine(2, $"Task<PageModel<{metadata.Name}>> GetAllAsync(int page, int pageSize, string sortField, bool asc);");
+
             if (metadata.Properties.Values.Any(a => a is StringProperty))
             {
-                builder.AppendLine($"        Task<List<{metadata.Name}>> SearchAsync(string term);");
-                builder.AppendLine($"        Task<PageModel<{metadata.Name}>> SearchAsync(string term, int page, int pageSize, string sortField, bool asc);");
+                builder
+                    .AppendNestedLine(2, $"Task<List<{metadata.Name}>> SearchAsync(string term);")
+                    .AppendNestedLine(2, $"Task<PageModel<{metadata.Name}>> SearchAsync(string term, int page, int pageSize, string sortField, bool asc);");
             }
-            builder.AppendLine($"        Task<ResultModel<{metadata.Name}>> UpdateAsync({metadata.Name} entity);");
-            builder.AppendLine("    }");
-            builder.AppendLine("}");
+
+            builder
+                .AppendNestedLine(2, $"Task<ResultModel<{metadata.Name}>> UpdateAsync({metadata.Name} entity);")
+                .AppendNestedLine(1, "}")
+                .AppendNestedLine(0, "}");
 
             return builder.ToString();
         }
 
+        /// <summary>
+        /// Returns the content of the class implementation
+        /// </summary>
+        /// <param name="argReader">Information fetched from the command line arguments</param>
+        /// <param name="metadata">Metadata about the model</param>
+        /// <returns>The content of the class implementation</returns>
         private string GetClassContent(ArgReader argReader, ModelMetadata metadata)
         {
             var builder = new StringBuilder();
@@ -101,124 +114,139 @@ namespace MinionSuite.Tool.Generators
                 .Where(w => w is StringProperty)
                 .Select(s => $"w.{s.Name}.Contains(term)"));
 
-            builder.AppendLine("using System;");
-            builder.AppendLine("using System.Collections.Generic;");
-            builder.AppendLine("using System.Linq;");
-            builder.AppendLine("using System.Threading.Tasks;");
-            builder.AppendLine("using Microsoft.EntityFrameworkCore;");
-            builder.AppendLine($"using {metadata.Namespace};");
-            builder.AppendLine();
-            builder.AppendLine($"namespace {argReader.Namespace}");
-            builder.AppendLine("{");
-            builder.AppendLine($"    public class {metadata.Name}Service : I{metadata.Name}Service");
-            builder.AppendLine("    {");
-            builder.AppendLine($"        private {argReader.DbContext} _context;");
-            builder.AppendLine();
-            builder.AppendLine($"        public {metadata.Name}Service({argReader.DbContext} context)");
-            builder.AppendLine("        {");
-            builder.AppendLine("            _context = context;");
-            builder.AppendLine("        }");
-            builder.AppendLine();
-            builder.AppendLine($"        public virtual async Task<ResultModel<{metadata.Name}>> CreateAsync({metadata.Name} entity)");
-            builder.AppendLine("        {");
+            builder
+                .AppendNestedLine(0, "using System;")
+                .AppendNestedLine(0, "using System.Collections.Generic;")
+                .AppendNestedLine(0, "using System.Linq;")
+                .AppendNestedLine(0, "using System.Threading.Tasks;")
+                .AppendNestedLine(0, "using Microsoft.EntityFrameworkCore;")
+                .AppendNestedLine(0, $"using {metadata.Namespace};")
+                .AppendLine()
+                .AppendNestedLine(0, $"namespace {argReader.Namespace}")
+                .AppendNestedLine(0, "{")
+                .AppendNestedLine(1, $"public class {metadata.Name}Service : I{metadata.Name}Service")
+                .AppendNestedLine(1, "{")
+                .AppendNestedLine(2, $"private readonly {argReader.DbContext} _context;")
+                .AppendLine()
+                .AppendNestedLine(2, $"public {metadata.Name}Service({argReader.DbContext} context)")
+                .AppendNestedLine(2, "{")
+                .AppendNestedLine(3, "_context = context;")
+                .AppendNestedLine(2, "}")
+                .AppendLine()
+                .AppendNestedLine(2, $"public virtual async Task<ResultModel<{metadata.Name}>> CreateAsync({metadata.Name} entity)")
+                .AppendNestedLine(2, "{");
+
             if (metadata.Properties.ContainsKey("CreatedAt"))
             {
-                builder.AppendLine("            entity.CreatedAt = DateTime.UtcNow;");
+                builder.AppendNestedLine(3, "entity.CreatedAt = DateTime.UtcNow;");
             }
             if (metadata.Properties.ContainsKey("UpdatedAt"))
             {
-                builder.AppendLine("            entity.UpdatedAt = DateTime.UtcNow;");
+                builder.AppendNestedLine(3, "entity.UpdatedAt = DateTime.UtcNow;");
             }
-            builder.AppendLine($"            _context.{metadata.PluralName}.Add(entity);");
-            builder.AppendLine("            await _context.SaveChangesAsync();");
-            builder.AppendLine();
-            builder.AppendLine($"            return new ResultModel<{metadata.Name}>(entity);");
-            builder.AppendLine("        }");
-            builder.AppendLine();
-            builder.AppendLine($"        public virtual Task DeleteAsync({metadata.Name} entity)");
-            builder.AppendLine("        {");
-            builder.AppendLine($"            _context.{metadata.PluralName}.Remove(entity);");
-            builder.AppendLine("            return _context.SaveChangesAsync();");
-            builder.AppendLine("        }");
-            builder.AppendLine();
-            builder.AppendLine($"        public virtual Task<{metadata.Name}> GetAsync({metadata.KeyProperty.TypeName} key)");
-            builder.AppendLine("        {");
-            builder.AppendLine($"            return _context.{metadata.PluralName}.FindAsync(key).AsTask();");
-            builder.AppendLine("        }");
-            builder.AppendLine();
-            builder.AppendLine($"        public virtual Task<List<{metadata.Name}>> GetAllAsync()");
-            builder.AppendLine("        {");
-            builder.AppendLine($"            return _context.{metadata.PluralName}.ToListAsync();");
-            builder.AppendLine("        }");
-            builder.AppendLine();
-            builder.AppendLine($"        public virtual Task<PageModel<{metadata.Name}>> GetAllAsync(int page, int pageSize, string sortField, bool asc)");
-            builder.AppendLine("        {");
-            builder.AppendLine("            var query = GetSortedQuery(sortField, asc);");
-            builder.AppendLine();
-            builder.AppendLine($"            return PageModel<{metadata.Name}>.CreateAsync(query, page, pageSize);");
-            builder.AppendLine("        }");
+
+            builder
+                .AppendNestedLine(3, $"_context.{metadata.PluralName}.Add(entity);")
+                .AppendNestedLine(3, "await _context.SaveChangesAsync();")
+                .AppendLine()
+                .AppendNestedLine(3, $"return new ResultModel<{metadata.Name}>(entity);")
+                .AppendNestedLine(2, "}")
+                .AppendLine()
+                .AppendNestedLine(2, $"public virtual Task DeleteAsync({metadata.Name} entity)")
+                .AppendNestedLine(2, "{")
+                .AppendNestedLine(3, $"_context.{metadata.PluralName}.Remove(entity);")
+                .AppendNestedLine(3, "return _context.SaveChangesAsync();")
+                .AppendNestedLine(2, "}")
+                .AppendLine()
+                .AppendNestedLine(2, $"public virtual Task<{metadata.Name}> GetAsync({metadata.KeyProperty.TypeName} key)")
+                .AppendNestedLine(2, "{")
+                .AppendNestedLine(3, $"return _context.{metadata.PluralName}.FindAsync(key).AsTask();")
+                .AppendNestedLine(2, "}")
+                .AppendLine()
+                .AppendNestedLine(2, $"public virtual Task<List<{metadata.Name}>> GetAllAsync()")
+                .AppendNestedLine(2, "{")
+                .AppendNestedLine(3, $"return _context.{metadata.PluralName}.ToListAsync();")
+                .AppendNestedLine(2, "}")
+                .AppendLine()
+                .AppendNestedLine(2, $"public virtual Task<PageModel<{metadata.Name}>> GetAllAsync(int page, int pageSize, string sortField, bool asc)")
+                .AppendNestedLine(2, "{")
+                .AppendNestedLine(3, "var query = GetSortedQuery(sortField, asc);")
+                .AppendLine()
+                .AppendNestedLine(3, $"return PageModel<{metadata.Name}>.CreateAsync(query, page, pageSize);")
+                .AppendNestedLine(2, "}");
+
             if (!string.IsNullOrEmpty(searchQuery))
             {
-                builder.AppendLine();
-                builder.AppendLine($"        public virtual Task<List<{metadata.Name}>> SearchAsync(string term)");
-                builder.AppendLine("        {");
-                builder.AppendLine($"            return _context.{metadata.PluralName}.Where(w => {searchQuery}).ToListAsync();");
-                builder.AppendLine("        }");
-                builder.AppendLine();
-                builder.AppendLine($"        public virtual Task<PageModel<{metadata.Name}>> SearchAsync(string term, int page, int pageSize, string sortField, bool asc)");
-                builder.AppendLine("        {");
-                builder.AppendLine($"            var query = GetSortedQuery(sortField, asc).Where(w => {searchQuery});");
-                builder.AppendLine();
-                builder.AppendLine($"            return PageModel<{metadata.Name}>.CreateAsync(query, page, pageSize);");
-                builder.AppendLine("        }");
+                builder
+                    .AppendLine()
+                    .AppendNestedLine(2, $"public virtual Task<List<{metadata.Name}>> SearchAsync(string term)")
+                    .AppendNestedLine(2, "{")
+                    .AppendNestedLine(3, $"return _context.{metadata.PluralName}.Where(w => {searchQuery}).ToListAsync();")
+                    .AppendNestedLine(2, "}")
+                    .AppendLine()
+                    .AppendNestedLine(2, $"public virtual Task<PageModel<{metadata.Name}>> SearchAsync(string term, int page, int pageSize, string sortField, bool asc)")
+                    .AppendNestedLine(2, "{")
+                    .AppendNestedLine(3, $"var query = GetSortedQuery(sortField, asc).Where(w => {searchQuery});")
+                    .AppendLine()
+                    .AppendNestedLine(3, $"return PageModel<{metadata.Name}>.CreateAsync(query, page, pageSize);")
+                    .AppendNestedLine(2, "}");
             }
-            builder.AppendLine();
-            builder.AppendLine($"        public virtual async Task<ResultModel<{metadata.Name}>> UpdateAsync({metadata.Name} entity)");
-            builder.AppendLine("        {");
-            builder.AppendLine($"            var existingEntity = await _context.{metadata.PluralName}.FindAsync(entity.{metadata.KeyName}).AsTask();");
-            builder.AppendLine("            if (existingEntity == null)");
-            builder.AppendLine("            {");
-            builder.AppendLine($"                return new ResultModel<{metadata.Name}>(\"The entity was not found.\");");
-            builder.AppendLine("            }");
-            builder.AppendLine();
+
+            builder
+                .AppendLine()
+                .AppendNestedLine(2, $"public virtual async Task<ResultModel<{metadata.Name}>> UpdateAsync({metadata.Name} entity)")
+                .AppendNestedLine(2, "{")
+                .AppendNestedLine(3, $"var existingEntity = await _context.{metadata.PluralName}.FindAsync(entity.{metadata.KeyName}).AsTask();")
+                .AppendNestedLine(3, "if (existingEntity == null)")
+                .AppendNestedLine(3, "{")
+                .AppendNestedLine(4, $"return new ResultModel<{metadata.Name}>(\"The entity was not found.\");")
+                .AppendNestedLine(3, "}")
+                .AppendLine();
+
             foreach (var property in metadata.Properties.Where(w => w.Key != metadata.KeyName && w.Key != "CreatedAt" && w.Key != "UpdatedAt"))
             {
-                builder.AppendLine($"            existingEntity.{property.Key} = entity.{property.Key};");
+                builder.AppendNestedLine(3, $"existingEntity.{property.Key} = entity.{property.Key};");
             }
             if (metadata.Properties.ContainsKey("UpdatedAt"))
             {
-                builder.AppendLine("            entity.UpdatedAt = DateTime.UtcNow;");
+                builder.AppendNestedLine(3, "entity.UpdatedAt = DateTime.UtcNow;");
             }
-            builder.AppendLine();
-            builder.AppendLine("            await _context.SaveChangesAsync();");
-            builder.AppendLine();
-            builder.AppendLine($"            return new ResultModel<{metadata.Name}>(existingEntity);");
-            builder.AppendLine("        }");
-            builder.AppendLine();
-            builder.AppendLine($"        protected virtual IQueryable<{metadata.Name}> GetSortedQuery(string sortField, bool asc)");
-            builder.AppendLine("        {");
-            builder.AppendLine($"            var query = _context.{metadata.PluralName}.OrderBy(o => o.{metadata.KeyName});");
-            builder.AppendLine();
-            builder.AppendLine("            switch (sortField)");
-            builder.AppendLine("            {");
+
+            builder
+                .AppendLine()
+                .AppendNestedLine(3, "await _context.SaveChangesAsync();")
+                .AppendLine()
+                .AppendNestedLine(3, $"return new ResultModel<{metadata.Name}>(existingEntity);")
+                .AppendNestedLine(2, "}")
+                .AppendLine()
+                .AppendNestedLine(2, $"protected virtual IQueryable<{metadata.Name}> GetSortedQuery(string sortField, bool asc)")
+                .AppendNestedLine(2, "{")
+                .AppendNestedLine(3, $"var query = _context.{metadata.PluralName}.OrderBy(o => o.{metadata.KeyName});")
+                .AppendLine()
+                .AppendNestedLine(3, "switch (sortField)")
+                .AppendNestedLine(3, "{");
+
             foreach (var property in metadata.Properties.Where(w => w.Key != metadata.KeyName))
             {
-                builder.AppendLine($"                case \"{property.Key}\":");
-                builder.AppendLine($"                    query = asc");
-                builder.AppendLine($"                        ? _context.{metadata.PluralName}");
-                builder.AppendLine($"                              .OrderBy(o => o.{property.Key})");
-                builder.AppendLine($"                              .ThenBy(o => o.{metadata.KeyName})");
-                builder.AppendLine($"                        : _context.{metadata.PluralName}");
-                builder.AppendLine($"                              .OrderByDescending(o => o.{property.Key})");
-                builder.AppendLine($"                              .ThenBy(o => o.{metadata.KeyName});");
-                builder.AppendLine("                    break;");
+                builder
+                    .AppendNestedLine(4, $"case \"{property.Key}\":")
+                    .AppendNestedLine(5, $"query = asc")
+                    .AppendNestedLine(6, $"? _context.{metadata.PluralName}")
+                    .AppendNestedLine(7, $".OrderBy(o => o.{property.Key})")
+                    .AppendNestedLine(7, $".ThenBy(o => o.{metadata.KeyName})")
+                    .AppendNestedLine(6, $": _context.{metadata.PluralName}")
+                    .AppendNestedLine(7, $".OrderByDescending(o => o.{property.Key})")
+                    .AppendNestedLine(7, $".ThenBy(o => o.{metadata.KeyName});")
+                    .AppendNestedLine(5, "break;");
             }
-            builder.AppendLine("            }");
-            builder.AppendLine();
-            builder.AppendLine("            return query;");
-            builder.AppendLine("        }");
-            builder.AppendLine("    }");
-            builder.AppendLine("}");
+
+            builder
+                .AppendNestedLine(3, "}")
+                .AppendLine()
+                .AppendNestedLine(3, "return query;")
+                .AppendNestedLine(2, "}")
+                .AppendNestedLine(1, "}")
+                .AppendNestedLine(0, "}");
 
             return builder.ToString();
         }

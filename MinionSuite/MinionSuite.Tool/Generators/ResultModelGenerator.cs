@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using MinionSuite.Tool.Extensions;
 using MinionSuite.Tool.Helpers;
 
 namespace MinionSuite.Tool.Generators
@@ -17,41 +18,42 @@ namespace MinionSuite.Tool.Generators
         {
             var builder = new StringBuilder();
 
-            builder.AppendLine("using System;");
-            builder.AppendLine("using System.Collections.Generic;");
-            builder.AppendLine("using System.Linq;");
-            builder.AppendLine();
-            builder.AppendLine($"namespace {argReader.Namespace}");
-            builder.AppendLine("{");
-            builder.AppendLine("    public class ResultModel<T>");
-            builder.AppendLine("    {");
-            builder.AppendLine("        public T Result { get; private set; }");
-            builder.AppendLine("        public IEnumerable<string> Errors { get; private set; }");
-            builder.AppendLine();
-            builder.AppendLine("        public bool IsSuccess { get => !Errors.Any(); }");
-            builder.AppendLine();
-            builder.AppendLine("        public ResultModel(T result, IEnumerable<string> errors)");
-            builder.AppendLine("        {");
-            builder.AppendLine("            Result = result;");
-            builder.AppendLine("            Errors = errors;");
-            builder.AppendLine("        }");
-            builder.AppendLine();
-            builder.AppendLine("        public ResultModel(T result)");
-            builder.AppendLine("            : this(result, new List<string>())");
-            builder.AppendLine("        {");
-            builder.AppendLine("        }");
-            builder.AppendLine();
-            builder.AppendLine("        public ResultModel(IEnumerable<string> errors)");
-            builder.AppendLine("            : this(default, errors)");
-            builder.AppendLine("        {");
-            builder.AppendLine("        }");
-            builder.AppendLine();
-            builder.AppendLine("        public ResultModel(string error)");
-            builder.AppendLine("            : this(default, new List<string>() { error })");
-            builder.AppendLine("        {");
-            builder.AppendLine("        }");
-            builder.AppendLine("    }");
-            builder.AppendLine("}");
+            builder
+                .AppendNestedLine(0, "using System;")
+                .AppendNestedLine(0, "using System.Collections.Generic;")
+                .AppendNestedLine(0, "using System.Linq;")
+                .AppendLine()
+                .AppendNestedLine(0, $"namespace {argReader.Namespace}")
+                .AppendNestedLine(0, "{")
+                .AppendNestedLine(1, "public class ResultModel<T>")
+                .AppendNestedLine(1, "{")
+                .AppendNestedLine(2, "public T Result { get; private set; }")
+                .AppendNestedLine(2, "public IEnumerable<string> Errors { get; private set; }")
+                .AppendLine()
+                .AppendNestedLine(2, "public bool IsSuccess => !Errors.Any();")
+                .AppendLine()
+                .AppendNestedLine(2, "public ResultModel(T result, IEnumerable<string> errors)")
+                .AppendNestedLine(2, "{")
+                .AppendNestedLine(3, "Result = result;")
+                .AppendNestedLine(3, "Errors = errors;")
+                .AppendNestedLine(2, "}")
+                .AppendLine()
+                .AppendNestedLine(2, "public ResultModel(T result)")
+                .AppendNestedLine(3, ": this(result, new List<string>())")
+                .AppendNestedLine(2, "{")
+                .AppendNestedLine(2, "}")
+                .AppendLine()
+                .AppendNestedLine(2, "public ResultModel(IEnumerable<string> errors)")
+                .AppendNestedLine(3, ": this(default, errors)")
+                .AppendNestedLine(2, "{")
+                .AppendNestedLine(2, "}")
+                .AppendLine()
+                .AppendNestedLine(2, "public ResultModel(string error)")
+                .AppendNestedLine(3, ": this(default, new List<string>() { error })")
+                .AppendNestedLine(2, "{")
+                .AppendNestedLine(2, "}")
+                .AppendNestedLine(1, "}")
+                .AppendNestedLine(0, "}");
 
             FileHelper.SaveToOutput(argReader.OutputFolder, "ResultModel.cs", builder.ToString());
         }
@@ -63,13 +65,14 @@ namespace MinionSuite.Tool.Generators
         {
             var builder = new StringBuilder();
 
-            builder.AppendLine("Usage: minionsuite resultmodel [parameters]");
-            builder.AppendLine();
-            builder.AppendLine("Generates a result model that represents the result of a service operation.");
-            builder.AppendLine();
-            builder.AppendLine("Parameters:");
-            builder.AppendLine("  -ns|--namespace <name>:\tThe namespace of the generated class.");
-            builder.AppendLine("  -o|--output <path>:\tThe path to the output folder (default: .).");
+            builder
+                .AppendLine("Usage: minionsuite resultmodel [parameters]")
+                .AppendLine()
+                .AppendLine("Generates a result model that represents the result of a service operation.")
+                .AppendLine()
+                .AppendLine("Parameters:")
+                .AppendLine("  -ns|--namespace <name>:\tThe namespace of the generated class.")
+                .AppendLine("  -o|--output <path>:\tThe path to the output folder (default: .).");
 
             Console.WriteLine(builder.ToString());
         }
