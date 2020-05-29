@@ -1,6 +1,6 @@
 # MinionSuite
 
-A dotnet CLI tool with scaffolding generators to make every day development easier.
+A dotnet CLI tool with scaffolding generators to make everyday development easier.
 
 ## Installation
 
