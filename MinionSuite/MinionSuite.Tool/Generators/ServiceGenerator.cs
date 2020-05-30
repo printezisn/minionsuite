@@ -49,11 +49,11 @@ namespace MinionSuite.Tool.Generators
                 .AppendLine("Generates a service layer based on a model class.")
                 .AppendLine()
                 .AppendLine("Parameters:")
-                .AppendLine("  -m|--model-path <path>:\tThe path to the model class.")
-                .AppendLine("  -ns|--namespace <name>:\tThe namespace of the generated classes.")
-                .AppendLine("  -o|--output <path>:\tThe path to the output folder (default: .).")
-                .AppendLine("  -gpm|--generate-page-model:\tGenerate page model.")
-                .AppendLine("  -grm|--generate-result-model:\tGenerate result model.")
+                .AppendLine("  -m|--model-path <path>:\t\t\tThe path to the model class.")
+                .AppendLine("  -ns|--namespace <name>:\t\t\tThe namespace of the generated classes.")
+                .AppendLine("  -o|--output <path>:\t\t\t\tThe path to the output folder (default: .).")
+                .AppendLine("  -gpm|--generate-page-model:\t\t\tGenerate page model.")
+                .AppendLine("  -grm|--generate-result-model:\t\t\tGenerate result model.")
                 .AppendLine("  -db <class name>|--db-context <class name>:\tThe database context class.");
 
             Console.WriteLine(builder.ToString());

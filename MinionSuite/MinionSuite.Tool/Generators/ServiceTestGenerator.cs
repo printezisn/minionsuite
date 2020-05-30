@@ -197,9 +197,9 @@ namespace MinionSuite.Tool.Generators
                 .AppendLine("Generates tests for the service layer based on a model class.")
                 .AppendLine()
                 .AppendLine("Parameters:")
-                .AppendLine("  -m|--model-path <path>:\tThe path to the model class.")
-                .AppendLine("  -ns|--namespace <name>:\tThe namespace of the generated classes.")
-                .AppendLine("  -o|--output <path>:\tThe path to the output folder (default: .).")
+                .AppendLine("  -m|--model-path <path>:\t\t\tThe path to the model class.")
+                .AppendLine("  -ns|--namespace <name>:\t\t\tThe namespace of the generated classes.")
+                .AppendLine("  -o|--output <path>:\t\t\t\tThe path to the output folder (default: .).")
                 .AppendLine("  -db <class name>|--db-context <class name>:\tThe database context class.");
 
             Console.WriteLine(builder.ToString());

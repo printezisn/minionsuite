@@ -37,7 +37,7 @@ namespace MinionSuite.Tool.Generators
                 .AppendLine()
                 .AppendLine("Parameters:")
                 .AppendLine("  -ns|--namespace <name>:\tThe namespace of the generated class.")
-                .AppendLine("  -o|--output <path>:\tThe path to the output folder (default: .).");
+                .AppendLine("  -o|--output <path>:\t\tThe path to the output folder (default: .).");
 
             Console.WriteLine(builder.ToString());
         }

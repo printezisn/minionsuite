@@ -36,10 +36,10 @@ namespace MinionSuite.Tool
             builder.AppendLine("General purpose generators.");
             builder.AppendLine();
             builder.AppendLine("Generators:");
-            builder.AppendLine("  servicegen:\tgenerates a service layer based on a model class.");
+            builder.AppendLine("  servicegen:\t\tgenerates a service layer based on a model class.");
             builder.AppendLine("  servicegen:test:\tgenerates tests for the service layer based on a model class.");
-            builder.AppendLine("  pagemodel:\tgenerates a model to handle paging for queryables.");
-            builder.AppendLine("  resultmodel:\tgenerates a result model that represents the result of a service operation.");
+            builder.AppendLine("  pagemodel:\t\tgenerates a model to handle paging for queryables.");
+            builder.AppendLine("  resultmodel:\t\tgenerates a result model that represents the result of a service operation.");
 
             Console.WriteLine(builder.ToString());
         }
