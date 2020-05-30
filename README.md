@@ -33,7 +33,7 @@ You can use the tool by invoking the `minionsuite` command and passing a generat
 
 ### Service generator
 
-Generates a service layer based on a model class. The service layers contains an interface and a class implementation.
+Generates a service layer based on a model class. The service layer contains an interface and a class implementation. Please note that the ORM used is Entity Framework Core.
 
 Usage: `minionsuite servicegen [parameters]`
 Parameters:
@@ -43,6 +43,7 @@ Parameters:
 - `-gpm` or `--generate-page-model`: Generate page model.
 - `-grm` or `--generate-result-model`: Generate result model.
 - `-db <name>` or `--db-context <name>`: The database context class.
+
 Example: `minionsuite servicegen -m ./Models/Post.cs -ns Example.Services -db ApplicationContext`
 
 The layer provides the following asynchronous methods:
@@ -52,6 +53,19 @@ The layer provides the following asynchronous methods:
 - **GetAllAsync**: Returns a list of entities. The result is paged and sorted based on a sorting field.
 - **SearchAsync**: Searches for entities based on a string term. The result is paged and sorted based on a sorting field.
 - **UpdateAsync**: Updates an entity.
+
+### Service test generator
+
+Generates tests for the service layer based on a model class.
+
+Usage: `minionsuite servicegen:test [parameters]`
+Parameters:
+- `-m <path>` or `--model-path <path>`: The path to the model class.
+- `-ns <name>` or `--namespace <name>`: The namespace of the generated classes.
+- `-o <path>` or `--output <path>`: The path to the output folder (default: .).
+- `-db <name>` or `--db-context <name>`: The database context class.
+
+Example: `minionsuite servicegen:test -m ./Models/Post.cs -ns Example.Services -db ApplicationContext`
 
 ### Page model generator
 
