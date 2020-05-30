@@ -45,9 +45,10 @@ namespace MinionSuiteExample.Web.Services
 
         public virtual Task<PageModel<Post>> GetAllAsync(int page, int pageSize, string sortField, bool asc)
         {
-            var query = GetSortedQuery(sortField, asc);
+            var query = _context.Posts.AsNoTracking();
+            query = GetSortedQuery(query, sortField, asc);
 
-            return PageModel<Post>.CreateAsync(query, page, pageSize);
+            return PageModel<Post>.CreateAsync(query, page, pageSize, sortField, asc);
         }
 
         public virtual Task<List<Post>> SearchAsync(string term)
@@ -57,9 +58,10 @@ namespace MinionSuiteExample.Web.Services
 
         public virtual Task<PageModel<Post>> SearchAsync(string term, int page, int pageSize, string sortField, bool asc)
         {
-            var query = GetSortedQuery(sortField, asc).Where(w => w.Title.Contains(term) || w.Body.Contains(term));
+            var query = _context.Posts.AsNoTracking().Where(w => w.Title.Contains(term) || w.Body.Contains(term));
+            query = GetSortedQuery(query, sortField, asc);
 
-            return PageModel<Post>.CreateAsync(query, page, pageSize);
+            return PageModel<Post>.CreateAsync(query, page, pageSize, sortField, asc);
         }
 
         public virtual async Task<ResultModel<Post>> UpdateAsync(Post entity)
@@ -79,51 +81,47 @@ namespace MinionSuiteExample.Web.Services
             return new ResultModel<Post>(existingEntity);
         }
 
-        protected virtual IQueryable<Post> GetSortedQuery(string sortField, bool asc)
+        protected virtual IQueryable<Post> GetSortedQuery(IQueryable<Post> query, string sortField, bool asc)
         {
-            var query = _context.Posts.OrderBy(o => o.Id);
-
             switch (sortField)
             {
                 case "Title":
-                    query = asc
-                        ? _context.Posts
+                    return asc
+                        ? query
                             .OrderBy(o => o.Title)
                             .ThenBy(o => o.Id)
-                        : _context.Posts
+                        : query
                             .OrderByDescending(o => o.Title)
                             .ThenBy(o => o.Id);
-                    break;
                 case "Body":
-                    query = asc
-                        ? _context.Posts
+                    return asc
+                        ? query
                             .OrderBy(o => o.Body)
                             .ThenBy(o => o.Id)
-                        : _context.Posts
+                        : query
                             .OrderByDescending(o => o.Body)
                             .ThenBy(o => o.Id);
-                    break;
                 case "CreatedAt":
-                    query = asc
-                        ? _context.Posts
+                    return asc
+                        ? query
                             .OrderBy(o => o.CreatedAt)
                             .ThenBy(o => o.Id)
-                        : _context.Posts
+                        : query
                             .OrderByDescending(o => o.CreatedAt)
                             .ThenBy(o => o.Id);
-                    break;
                 case "UpdatedAt":
-                    query = asc
-                        ? _context.Posts
+                    return asc
+                        ? query
                             .OrderBy(o => o.UpdatedAt)
                             .ThenBy(o => o.Id)
-                        : _context.Posts
+                        : query
                             .OrderByDescending(o => o.UpdatedAt)
                             .ThenBy(o => o.Id);
-                    break;
+                default:
+                    return asc
+                        ? query.OrderBy(o => o.Id)
+                        : query.OrderByDescending(o => o.Id);
             }
-
-            return query;
         }
     }
 }

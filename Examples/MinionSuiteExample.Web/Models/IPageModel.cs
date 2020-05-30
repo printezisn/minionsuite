@@ -10,5 +10,7 @@ namespace MinionSuiteExample.Web.Models
         int PageSize { get; }
         bool IsFirstPage { get; }
         bool IsLastPage { get; }
+        string SortField { get; }
+        bool IsAscending { get; }
     }
 }
