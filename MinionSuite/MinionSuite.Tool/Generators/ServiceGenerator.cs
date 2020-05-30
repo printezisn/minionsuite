@@ -170,9 +170,10 @@ namespace MinionSuite.Tool.Generators
                 .AppendLine()
                 .AppendNestedLine(2, $"public virtual Task<PageModel<{metadata.Name}>> GetAllAsync(int page, int pageSize, string sortField, bool asc)")
                 .AppendNestedLine(2, "{")
-                .AppendNestedLine(3, "var query = GetSortedQuery(sortField, asc);")
+                .AppendNestedLine(3, $"var query = _context.{metadata.PluralName}.AsNoTracking();")
+                .AppendNestedLine(3, "query = GetSortedQuery(query, sortField, asc);")
                 .AppendLine()
-                .AppendNestedLine(3, $"return PageModel<{metadata.Name}>.CreateAsync(query, page, pageSize);")
+                .AppendNestedLine(3, $"return PageModel<{metadata.Name}>.CreateAsync(query, page, pageSize, sortField, asc);")
                 .AppendNestedLine(2, "}");
 
             if (!string.IsNullOrEmpty(searchQuery))
@@ -186,9 +187,10 @@ namespace MinionSuite.Tool.Generators
                     .AppendLine()
                     .AppendNestedLine(2, $"public virtual Task<PageModel<{metadata.Name}>> SearchAsync(string term, int page, int pageSize, string sortField, bool asc)")
                     .AppendNestedLine(2, "{")
-                    .AppendNestedLine(3, $"var query = GetSortedQuery(sortField, asc).Where(w => {searchQuery});")
+                    .AppendNestedLine(3, $"var query = _context.{metadata.PluralName}.AsNoTracking().Where(w => {searchQuery});")
+                    .AppendNestedLine(3, $"query = GetSortedQuery(query, sortField, asc);")
                     .AppendLine()
-                    .AppendNestedLine(3, $"return PageModel<{metadata.Name}>.CreateAsync(query, page, pageSize);")
+                    .AppendNestedLine(3, $"return PageModel<{metadata.Name}>.CreateAsync(query, page, pageSize, sortField, asc);")
                     .AppendNestedLine(2, "}");
             }
 
@@ -219,10 +221,8 @@ namespace MinionSuite.Tool.Generators
                 .AppendNestedLine(3, $"return new ResultModel<{metadata.Name}>(existingEntity);")
                 .AppendNestedLine(2, "}")
                 .AppendLine()
-                .AppendNestedLine(2, $"protected virtual IQueryable<{metadata.Name}> GetSortedQuery(string sortField, bool asc)")
+                .AppendNestedLine(2, $"protected virtual IQueryable<{metadata.Name}> GetSortedQuery(IQueryable<{metadata.Name}> query, string sortField, bool asc)")
                 .AppendNestedLine(2, "{")
-                .AppendNestedLine(3, $"var query = _context.{metadata.PluralName}.OrderBy(o => o.{metadata.KeyName});")
-                .AppendLine()
                 .AppendNestedLine(3, "switch (sortField)")
                 .AppendNestedLine(3, "{");
 
@@ -230,20 +230,21 @@ namespace MinionSuite.Tool.Generators
             {
                 builder
                     .AppendNestedLine(4, $"case \"{property.Key}\":")
-                    .AppendNestedLine(5, $"query = asc")
-                    .AppendNestedLine(6, $"? _context.{metadata.PluralName}")
+                    .AppendNestedLine(5, $"return asc")
+                    .AppendNestedLine(6, "? query")
                     .AppendNestedLine(7, $".OrderBy(o => o.{property.Key})")
                     .AppendNestedLine(7, $".ThenBy(o => o.{metadata.KeyName})")
-                    .AppendNestedLine(6, $": _context.{metadata.PluralName}")
+                    .AppendNestedLine(6, ": query")
                     .AppendNestedLine(7, $".OrderByDescending(o => o.{property.Key})")
-                    .AppendNestedLine(7, $".ThenBy(o => o.{metadata.KeyName});")
-                    .AppendNestedLine(5, "break;");
+                    .AppendNestedLine(7, $".ThenBy(o => o.{metadata.KeyName});");
             }
 
             builder
+                .AppendNestedLine(4, "default:")
+                .AppendNestedLine(5, $"return asc")
+                .AppendNestedLine(6, $"? query.OrderBy(o => o.{metadata.KeyName})")
+                .AppendNestedLine(6, $": query.OrderByDescending(o => o.{metadata.KeyName});")
                 .AppendNestedLine(3, "}")
-                .AppendLine()
-                .AppendNestedLine(3, "return query;")
                 .AppendNestedLine(2, "}")
                 .AppendNestedLine(1, "}")
                 .AppendNestedLine(0, "}");

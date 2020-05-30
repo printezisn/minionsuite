@@ -14,6 +14,8 @@ namespace MinionSuite.Tests.Templates
         public int TotalPages { get; private set; }
         public int Page { get; private set; }
         public int PageSize { get; private set; }
+        public string SortField { get; private set; }
+        public bool IsAscending { get; private set; }
 
         public bool IsFirstPage => Page == 1;
         public bool IsLastPage => Page == TotalPages;
@@ -22,10 +24,12 @@ namespace MinionSuite.Tests.Templates
         {
         }
 
-        public static async Task<PageModel<T>> CreateAsync(IQueryable<T> query, int page, int pageSize)
+        public static async Task<PageModel<T>> CreateAsync(IQueryable<T> query, int page, int pageSize, string sortField, bool asc)
         {
             var pageModel = new PageModel<T>();
 
+            pageModel.SortField = sortField;
+            pageModel.IsAscending = asc;
             pageModel.PageSize = pageSize;
             pageModel.TotalItems = query.Count();
             pageModel.TotalPages = (int)Math.Ceiling(pageModel.TotalItems / (double)pageModel.PageSize);
