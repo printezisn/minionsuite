@@ -36,5 +36,15 @@ namespace MinionSuite.Tool.Properties
             Name = name;
             TypeName = typeName;
         }
+
+        /// <summary>
+        /// A default value
+        /// </summary>
+        /// <param name="index">An index to make the value unique</param>
+        /// <returns>The default value</returns>
+        public string DefaultValue(int index)
+        {
+            return index.ToString();
+        }
     }
 }

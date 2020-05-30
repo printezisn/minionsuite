@@ -15,5 +15,12 @@ namespace MinionSuite.Tool.Properties
         /// The property type
         /// </summary>
         string TypeName { get; }
+
+        /// <summary>
+        /// A default value
+        /// </summary>
+        /// <param name="index">An index to make the value unique</param>
+        /// <returns>The default value</returns>
+        string DefaultValue(int index);
     }
 }

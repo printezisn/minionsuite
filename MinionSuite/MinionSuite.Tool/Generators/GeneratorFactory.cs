@@ -14,17 +14,14 @@ namespace MinionSuite.Tool.Generators
         /// <returns>The generator</returns>
         public static IGenerator GetGenerator(ArgReader argReader)
         {
-            switch (argReader.Generator)
+            return argReader.Generator switch
             {
-                case "servicegen":
-                    return new ServiceGenerator();
-                case "pagemodel":
-                    return new PageModelGenerator();
-                case "resultmodel":
-                    return new ResultModelGenerator();
-                default:
-                    throw new ArgumentException($"{argReader.Generator} is an invalid generator.");
-            }
+                "servicegen" => new ServiceGenerator(),
+                "servicegen:test" => new ServiceTestGenerator(),
+                "pagemodel" => new PageModelGenerator(),
+                "resultmodel" => new ResultModelGenerator(),
+                _ => throw new ArgumentException($"{argReader.Generator} is an invalid generator."),
+            };
         }
     }
 }
