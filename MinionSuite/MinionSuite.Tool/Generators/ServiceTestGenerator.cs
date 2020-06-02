@@ -21,6 +21,7 @@ namespace MinionSuite.Tool.Generators
             var metadata = new ModelMetadata(argReader.ModelPath);
             var builder = new StringBuilder();
 
+            string sequenceVariable = "_entitySequence";
             var filledProperties = metadata.Properties
                 .Where(w => w.Key != metadata.KeyName && w.Key != "CreatedAt" && w.Key != "UpdatedAt");
             var firstFilledProperty = filledProperties.First();
@@ -38,13 +39,15 @@ namespace MinionSuite.Tool.Generators
                 .AppendNestedLine(0, "{")
                 .AppendNestedLine(1, $"public class {metadata.Name}ServiceTests : IDisposable")
                 .AppendNestedLine(1, "{")
+                .AppendNestedLine(2, $"private int {sequenceVariable} = 1;")
+                .AppendLine()
                 .AppendNestedLine(2, $"private {argReader.DbContext} _context;")
                 .AppendNestedLine(2, $"private {metadata.Name}Service _service;")
                 .AppendLine()
                 .AppendNestedLine(2, $"public {metadata.Name}ServiceTests()")
                 .AppendNestedLine(2, "{")
                 .AppendNestedLine(3, $"var options = new DbContextOptionsBuilder<{argReader.DbContext}>()")
-                .AppendNestedLine(4, $".UseInMemoryDatabase(\"{metadata.Name}Service\")")
+                .AppendNestedLine(4, ".UseInMemoryDatabase(\"Application\")")
                 .AppendNestedLine(4, ".Options;")
                 .AppendNestedLine(3, $"_context = new {argReader.DbContext}(options);")
                 .AppendNestedLine(3, $"_service = new {metadata.Name}Service(_context);")
@@ -76,13 +79,26 @@ namespace MinionSuite.Tool.Generators
                 .AppendNestedLine(2, "{")
                 .AppendNestedLine(3, "var entity = await CreateEntity();")
                 .AppendLine()
-                .AppendNestedLine(3, $"entity.{firstFilledProperty.Key} = {firstFilledProperty.Value.DefaultValue(2)};")
+                .AppendNestedLine(3, $"entity.{firstFilledProperty.Key} = {firstFilledProperty.Value.SequenceValue(sequenceVariable)};")
                 .AppendNestedLine(3, "await _service.UpdateAsync(entity);")
                 .AppendLine()
                 .AppendNestedLine(3, $"entity = await _service.GetAsync(entity.{metadata.KeyName});")
                 .AppendLine()
                 .AppendNestedLine(3, "Assert.NotNull(entity);")
-                .AppendNestedLine(3, $"Assert.Equal({firstFilledProperty.Value.DefaultValue(2)}, entity.{firstFilledProperty.Key});")
+                .AppendNestedLine(3, $"Assert.Equal({firstFilledProperty.Value.SequenceValue(sequenceVariable)}, entity.{firstFilledProperty.Key});")
+                .AppendNestedLine(2, "}")
+                .AppendLine()
+                .AppendNestedLine(2, "[Fact]")
+                .AppendNestedLine(2, "public async Task TestUpdateNotExistingEntity()")
+                .AppendNestedLine(2, "{")
+                .AppendNestedLine(3, $"var entity = new {metadata.Name}()")
+                .AppendNestedLine(3, "{")
+                .AppendNestedLine(4, $"{metadata.KeyName} = {metadata.KeyProperty.SequenceValue(sequenceVariable)}")
+                .AppendNestedLine(3, "};")
+                .AppendLine()
+                .AppendNestedLine(3, "var result = await _service.UpdateAsync(entity);")
+                .AppendLine()
+                .AppendNestedLine(3, "Assert.False(result.IsSuccess);")
                 .AppendNestedLine(2, "}")
                 .AppendLine()
                 .AppendNestedLine(2, "[Fact]")
@@ -101,8 +117,6 @@ namespace MinionSuite.Tool.Generators
                 .AppendNestedLine(2, "{")
                 .AppendNestedLine(3, "await CreateEntity();")
                 .AppendNestedLine(3, "var entity = await CreateEntity();")
-                .AppendNestedLine(3, $"entity.{firstFilledProperty.Key} = {firstFilledProperty.Value.DefaultValue(2)};")
-                .AppendNestedLine(3, "await _service.UpdateAsync(entity);")
                 .AppendLine()
                 .AppendNestedLine(3, $"var page = await _service.GetAllAsync(1, 1, \"{firstFilledProperty.Key}\", false);")
                 .AppendLine()
@@ -121,44 +135,29 @@ namespace MinionSuite.Tool.Generators
                     .AppendNestedLine(2, "public async Task TestSearch()")
                     .AppendNestedLine(2, "{")
                     .AppendNestedLine(3, "await CreateEntity();")
-                    .AppendNestedLine(3, "var secondEntity = await CreateEntity();");
-                foreach (var property in filledStringProperties)
-                {
-                    builder
-                        .AppendNestedLine(3, $"secondEntity.{property.Key} = {property.Value.DefaultValue(2)};");
-                }
-                builder
-                    .AppendNestedLine(3, "await _service.UpdateAsync(secondEntity);")
+                    .AppendNestedLine(3, "var entity = await CreateEntity();")
                     .AppendLine()
-                    .AppendNestedLine(3, $"var entities = await _service.SearchAsync({filledStringProperties.First().Value.DefaultValue(2)});")
+                    .AppendNestedLine(3, $"var entities = await _service.SearchAsync(entity.{filledStringProperties.First().Key});")
                     .AppendLine()
                     .AppendNestedLine(3, "Assert.Single(entities);")
-                    .AppendNestedLine(3, "Assert.Equal(secondEntity.Id, entities.First().Id);")
+                    .AppendNestedLine(3, "Assert.Equal(entity.Id, entities.First().Id);")
                     .AppendNestedLine(2, "}")
                     .AppendLine()
                     .AppendNestedLine(2, "[Fact]")
                     .AppendNestedLine(2, "public async Task TestSearchWithPagingAndSorting()")
                     .AppendNestedLine(2, "{")
                     .AppendNestedLine(3, "await CreateEntity();")
-                    .AppendNestedLine(3, "var secondEntity = await CreateEntity();")
-                    .AppendNestedLine(3, "var thirdEntity = await CreateEntity();");
-                foreach (var property in filledStringProperties)
-                {
-                    builder
-                        .AppendNestedLine(3, $"thirdEntity.{property.Key} = {property.Value.DefaultValue(2)};");
-                }
-                builder
-                    .AppendNestedLine(3, "await _service.UpdateAsync(thirdEntity);")
+                    .AppendNestedLine(3, "var entity = await CreateEntity();")
                     .AppendLine()
-                    .AppendNestedLine(3, $"var page = await _service.SearchAsync({filledStringProperties.First().Value.DefaultValue(1)}, 1, 1, "
+                    .AppendNestedLine(3, $"var page = await _service.SearchAsync(entity.{filledStringProperties.First().Key}, 1, 1, "
                         + $"\"{metadata.KeyName}\", false);")
                     .AppendLine()
-                    .AppendNestedLine(3, "Assert.Equal(2, page.TotalItems);")
+                    .AppendNestedLine(3, "Assert.Equal(1, page.TotalItems);")
                     .AppendNestedLine(3, "Assert.Equal(1, page.Page);")
                     .AppendNestedLine(3, "Assert.Equal(1, page.PageSize);")
                     .AppendNestedLine(3, $"Assert.Equal(\"{metadata.KeyName}\", page.SortField);")
                     .AppendNestedLine(3, "Assert.False(page.IsAscending);")
-                    .AppendNestedLine(3, "Assert.Equal(secondEntity.Id, page.First().Id);")
+                    .AppendNestedLine(3, "Assert.Equal(entity.Id, page.First().Id);")
                     .AppendNestedLine(2, "}");
             }
             builder
@@ -170,12 +169,15 @@ namespace MinionSuite.Tool.Generators
             foreach (var property in filledProperties)
             {
                 builder
-                    .AppendNestedLine(4, $"{property.Key} = {property.Value.DefaultValue(1)},");
+                    .AppendNestedLine(4, $"{property.Key} = {property.Value.SequenceValue(sequenceVariable)},");
             }
             builder
                 .AppendNestedLine(3, "};")
                 .AppendLine()
                 .AppendNestedLine(3, "var result = await _service.CreateAsync(entity);")
+                .AppendLine()
+                .AppendNestedLine(3, $"{sequenceVariable}++;")
+                .AppendLine()
                 .AppendNestedLine(3, "return result.Result;")
                 .AppendNestedLine(2, "}")
                 .AppendNestedLine(1, "}")

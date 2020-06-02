@@ -17,10 +17,10 @@ namespace MinionSuite.Tool.Properties
         string TypeName { get; }
 
         /// <summary>
-        /// A default value
+        /// A default sequence value
         /// </summary>
-        /// <param name="index">An index to make the value unique</param>
-        /// <returns>The default value</returns>
-        string DefaultValue(int index);
+        /// <param name="sequenceVariable">The name of the sequence variable</param>
+        /// <returns>The sequence value</returns>
+        string SequenceValue(string sequenceVariable);
     }
 }

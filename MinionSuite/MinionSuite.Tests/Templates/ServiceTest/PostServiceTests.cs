@@ -9,13 +9,15 @@ namespace MinionSuite.Tests.Templates
 {
     public class PostServiceTests : IDisposable
     {
+        private int _entitySequence = 1;
+
         private ApplicationContext _context;
         private PostService _service;
 
         public PostServiceTests()
         {
             var options = new DbContextOptionsBuilder<ApplicationContext>()
-                .UseInMemoryDatabase("PostService")
+                .UseInMemoryDatabase("Application")
                 .Options;
             _context = new ApplicationContext(options);
             _service = new PostService(_context);
@@ -45,13 +47,26 @@ namespace MinionSuite.Tests.Templates
         {
             var entity = await CreateEntity();
 
-            entity.Title = "2";
+            entity.Title = _entitySequence.ToString();
             await _service.UpdateAsync(entity);
 
             entity = await _service.GetAsync(entity.Id);
 
             Assert.NotNull(entity);
-            Assert.Equal("2", entity.Title);
+            Assert.Equal(_entitySequence.ToString(), entity.Title);
+        }
+
+        [Fact]
+        public async Task TestUpdateNotExistingEntity()
+        {
+            var entity = new Post()
+            {
+                Id = _entitySequence
+            };
+
+            var result = await _service.UpdateAsync(entity);
+
+            Assert.False(result.IsSuccess);
         }
 
         [Fact]
@@ -70,8 +85,6 @@ namespace MinionSuite.Tests.Templates
         {
             await CreateEntity();
             var entity = await CreateEntity();
-            entity.Title = "2";
-            await _service.UpdateAsync(entity);
 
             var page = await _service.GetAllAsync(1, 1, "Title", false);
 
@@ -87,48 +100,44 @@ namespace MinionSuite.Tests.Templates
         public async Task TestSearch()
         {
             await CreateEntity();
-            var secondEntity = await CreateEntity();
-            secondEntity.Title = "2";
-            secondEntity.Body = "2";
-            await _service.UpdateAsync(secondEntity);
+            var entity = await CreateEntity();
 
-            var entities = await _service.SearchAsync("2");
+            var entities = await _service.SearchAsync(entity.Title);
 
             Assert.Single(entities);
-            Assert.Equal(secondEntity.Id, entities.First().Id);
+            Assert.Equal(entity.Id, entities.First().Id);
         }
 
         [Fact]
         public async Task TestSearchWithPagingAndSorting()
         {
             await CreateEntity();
-            var secondEntity = await CreateEntity();
-            var thirdEntity = await CreateEntity();
-            thirdEntity.Title = "2";
-            thirdEntity.Body = "2";
-            await _service.UpdateAsync(thirdEntity);
+            var entity = await CreateEntity();
 
-            var page = await _service.SearchAsync("1", 1, 1, "Id", false);
+            var page = await _service.SearchAsync(entity.Title, 1, 1, "Id", false);
 
-            Assert.Equal(2, page.TotalItems);
+            Assert.Equal(1, page.TotalItems);
             Assert.Equal(1, page.Page);
             Assert.Equal(1, page.PageSize);
             Assert.Equal("Id", page.SortField);
             Assert.False(page.IsAscending);
-            Assert.Equal(secondEntity.Id, page.First().Id);
+            Assert.Equal(entity.Id, page.First().Id);
         }
 
         private async Task<Post> CreateEntity()
         {
             var entity = new Post()
             {
-                Title = "1",
-                Body = "1",
-                TotalViews = 1,
-                Rating = 1,
+                Title = _entitySequence.ToString(),
+                Body = _entitySequence.ToString(),
+                TotalViews = _entitySequence,
+                Rating = _entitySequence,
             };
 
             var result = await _service.CreateAsync(entity);
+
+            _entitySequence++;
+
             return result.Result;
         }
     }

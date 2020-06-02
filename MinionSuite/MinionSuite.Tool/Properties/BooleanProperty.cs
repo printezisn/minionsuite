@@ -35,13 +35,13 @@ namespace MinionSuite.Tool.Properties
         }
 
         /// <summary>
-        /// A default value
+        /// A default sequence value
         /// </summary>
-        /// <param name="index">An index to make the value unique</param>
-        /// <returns>The default value</returns>
-        public string DefaultValue(int index)
+        /// <param name="sequenceVariable">The name of the sequence variable</param>
+        /// <returns>The sequence value</returns>
+        public string SequenceValue(string sequenceVariable)
         {
-            return (index % 2 == 1).ToString();
+            return $"{sequenceVariable} % 2 == 1";
         }
     }
 }
