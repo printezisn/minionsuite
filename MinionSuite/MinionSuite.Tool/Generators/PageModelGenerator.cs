@@ -36,7 +36,7 @@ namespace MinionSuite.Tool.Generators
                 .AppendLine("Generates a model to handle paging for queryables.")
                 .AppendLine()
                 .AppendLine("Parameters:")
-                .AppendLine("  -ns|--namespace <name>:\tThe namespace of the generated class.")
+                .AppendLine("  -ns|--namespace <name>:\tThe namespace of the generated classes.")
                 .AppendLine("  -o|--output <path>:\t\tThe path to the output folder (default: .).");
 
             Console.WriteLine(builder.ToString());

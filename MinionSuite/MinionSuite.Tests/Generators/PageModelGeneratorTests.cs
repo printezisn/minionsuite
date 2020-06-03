@@ -5,7 +5,7 @@ using MinionSuite.Tool;
 using MinionSuite.Tool.Generators;
 using Xunit;
 
-namespace MinionSuite.Tests
+namespace MinionSuite.Tests.Generators
 {
     public class GeneratorTests
     {

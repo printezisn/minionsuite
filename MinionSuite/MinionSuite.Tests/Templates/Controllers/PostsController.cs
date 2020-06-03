@@ -1,10 +1,9 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using MinionSuiteExample.Web.Models;
-using MinionSuiteExample.Web.Services;
+using MinionSuite.Tests.Models;
 
-namespace MinionSuiteExample.Web.Controllers
+namespace MinionSuite.Tests.Templates
 {
     public class PostsController : Controller
     {
@@ -44,7 +43,7 @@ namespace MinionSuiteExample.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Body")] Post entity)
+        public async Task<IActionResult> Create([Bind("Title,Body,TotalViews,Rating")] Post entity)
         {
             if (!ModelState.IsValid)
             {
@@ -78,7 +77,7 @@ namespace MinionSuiteExample.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([Bind("Id,Title,Body")] Post entity)
+        public async Task<IActionResult> Edit([Bind("Id,Title,Body,TotalViews,Rating")] Post entity)
         {
             if (!ModelState.IsValid)
             {

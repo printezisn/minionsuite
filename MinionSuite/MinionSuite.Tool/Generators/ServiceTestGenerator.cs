@@ -200,7 +200,7 @@ namespace MinionSuite.Tool.Generators
                 .AppendLine()
                 .AppendLine("Parameters:")
                 .AppendLine("  -m|--model-path <path>:\t\t\tThe path to the model class.")
-                .AppendLine("  -ns|--namespace <name>:\t\t\tThe namespace of the generated classes.")
+                .AppendLine("  -ns|--namespace <name>:\t\t\tThe namespace of the generated class.")
                 .AppendLine("  -o|--output <path>:\t\t\t\tThe path to the output folder (default: .).")
                 .AppendLine("  -db <class name>|--db-context <class name>:\tThe database context class.");
 

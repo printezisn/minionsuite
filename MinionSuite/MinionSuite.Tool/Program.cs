@@ -40,6 +40,7 @@ namespace MinionSuite.Tool
             builder.AppendLine("  servicegen:test:\tgenerates tests for the service layer based on a model class.");
             builder.AppendLine("  pagemodel:\t\tgenerates a model to handle paging for queryables.");
             builder.AppendLine("  resultmodel:\t\tgenerates a result model that represents the result of a service operation.");
+            builder.AppendLine("  mvccontroller:\tgenerates an MVC controller with CRUD operations on a model class.");
 
             Console.WriteLine(builder.ToString());
         }

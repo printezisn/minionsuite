@@ -20,6 +20,7 @@ namespace MinionSuite.Tool.Generators
                 "servicegen:test" => new ServiceTestGenerator(),
                 "pagemodel" => new PageModelGenerator(),
                 "resultmodel" => new ResultModelGenerator(),
+                "mvccontroller" => new MvcControllerGenerator(),
                 _ => throw new ArgumentException($"{argReader.Generator} is an invalid generator."),
             };
         }
