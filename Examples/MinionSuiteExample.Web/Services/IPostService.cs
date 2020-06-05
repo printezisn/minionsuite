@@ -8,7 +8,7 @@ namespace MinionSuiteExample.Web.Services
     public interface IPostService
     {
         Task<ResultModel<Post>> CreateAsync(Post entity);
-        Task DeleteAsync(Post entity);
+        Task<bool> DeleteAsync(int key);
         Task<Post> GetAsync(int key);
         Task<List<Post>> GetAllAsync();
         Task<PageModel<Post>> GetAllAsync(int page, int pageSize, string sortField, bool asc);

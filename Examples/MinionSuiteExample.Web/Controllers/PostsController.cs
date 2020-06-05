@@ -44,7 +44,7 @@ namespace MinionSuiteExample.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Body")] Post entity)
+        public async Task<IActionResult> Create(Post entity)
         {
             if (!ModelState.IsValid)
             {
@@ -78,7 +78,7 @@ namespace MinionSuiteExample.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([Bind("Id,Title,Body")] Post entity)
+        public async Task<IActionResult> Edit(Post entity)
         {
             if (!ModelState.IsValid)
             {
@@ -86,6 +86,11 @@ namespace MinionSuiteExample.Web.Controllers
             }
 
             var result = await _service.UpdateAsync(entity);
+            if (result == null)
+            {
+                return NotFound();
+            }
+
             if (!result.IsSuccess)
             {
                 foreach (var error in result.Errors)
@@ -114,15 +119,13 @@ namespace MinionSuiteExample.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var entity = await _service.GetAsync(id);
-            if (entity == null)
+            var result = await _service.DeleteAsync(id);
+            if (result)
             {
-                return NotFound();
+                return RedirectToAction(nameof(Index));
             }
 
-            await _service.DeleteAsync(entity);
-
-            return RedirectToAction(nameof(Index));
+            return NotFound();
         }
     }
 }

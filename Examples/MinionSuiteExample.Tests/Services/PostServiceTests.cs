@@ -66,14 +66,14 @@ namespace MinionSuiteExample.Tests.Services
 
             var result = await _service.UpdateAsync(entity);
 
-            Assert.False(result.IsSuccess);
+            Assert.Null(result);
         }
 
         [Fact]
         public async Task TestDeleteEntity()
         {
             var entity = await CreateEntity();
-            await _service.DeleteAsync(entity);
+            await _service.DeleteAsync(entity.Id);
 
             entity = await _service.GetAsync(entity.Id);
 
