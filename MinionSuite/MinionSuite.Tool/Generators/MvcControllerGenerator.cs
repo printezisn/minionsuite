@@ -21,7 +21,6 @@ namespace MinionSuite.Tool.Generators
             var builder = new StringBuilder();
             var filledProperties = metadata.Properties
                 .Where(w => w.Key != metadata.KeyName && w.Key != "CreatedAt" && w.Key != "UpdatedAt");
-            var bindProperties = string.Join(',', filledProperties.Select(s => s.Key));
 
             builder
                 .AppendNestedLine(0, "using System;")
@@ -69,7 +68,7 @@ namespace MinionSuite.Tool.Generators
                 .AppendLine()
                 .AppendNestedLine(2, "[HttpPost]")
                 .AppendNestedLine(2, "[ValidateAntiForgeryToken]")
-                .AppendNestedLine(2, $"public async Task<IActionResult> Create([Bind(\"{bindProperties}\")] {metadata.Name} entity)")
+                .AppendNestedLine(2, $"public async Task<IActionResult> Create({metadata.Name} entity)")
                 .AppendNestedLine(2, "{")
                 .AppendNestedLine(3, "if (!ModelState.IsValid)")
                 .AppendNestedLine(3, "{")
@@ -103,7 +102,7 @@ namespace MinionSuite.Tool.Generators
                 .AppendLine()
                 .AppendNestedLine(2, "[HttpPost]")
                 .AppendNestedLine(2, "[ValidateAntiForgeryToken]")
-                .AppendNestedLine(2, $"public async Task<IActionResult> Edit([Bind(\"{metadata.KeyName},{bindProperties}\")] {metadata.Name} entity)")
+                .AppendNestedLine(2, $"public async Task<IActionResult> Edit({metadata.Name} entity)")
                 .AppendNestedLine(2, "{")
                 .AppendNestedLine(3, "if (!ModelState.IsValid)")
                 .AppendNestedLine(3, "{")
@@ -111,6 +110,11 @@ namespace MinionSuite.Tool.Generators
                 .AppendNestedLine(3, "}")
                 .AppendLine()
                 .AppendNestedLine(3, "var result = await _service.UpdateAsync(entity);")
+                .AppendNestedLine(3, "if (result == null)")
+                .AppendNestedLine(3, "{")
+                .AppendNestedLine(4, "return NotFound();")
+                .AppendNestedLine(3, "}")
+                .AppendLine()
                 .AppendNestedLine(3, "if (!result.IsSuccess)")
                 .AppendNestedLine(3, "{")
                 .AppendNestedLine(4, "foreach (var error in result.Errors)")
@@ -139,15 +143,13 @@ namespace MinionSuite.Tool.Generators
                 .AppendNestedLine(2, "[ValidateAntiForgeryToken]")
                 .AppendNestedLine(2, $"public async Task<IActionResult> DeleteConfirmed({metadata.KeyProperty.TypeName} id)")
                 .AppendNestedLine(2, "{")
-                .AppendNestedLine(3, "var entity = await _service.GetAsync(id);")
-                .AppendNestedLine(3, "if (entity == null)")
+                .AppendNestedLine(3, "var result = await _service.DeleteAsync(id);")
+                .AppendNestedLine(3, "if (result)")
                 .AppendNestedLine(3, "{")
-                .AppendNestedLine(4, "return NotFound();")
+                .AppendNestedLine(4, "return RedirectToAction(nameof(Index));")
                 .AppendNestedLine(3, "}")
                 .AppendLine()
-                .AppendNestedLine(3, "await _service.DeleteAsync(entity);")
-                .AppendLine()
-                .AppendNestedLine(3, "return RedirectToAction(nameof(Index));")
+                .AppendNestedLine(3, "return NotFound();")
                 .AppendNestedLine(2, "}")
                 .AppendNestedLine(1, "}")
                 .AppendNestedLine(0, "}");

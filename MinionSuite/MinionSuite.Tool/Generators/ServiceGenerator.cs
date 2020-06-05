@@ -80,7 +80,7 @@ namespace MinionSuite.Tool.Generators
                 .AppendNestedLine(1, $"public interface I{metadata.Name}Service")
                 .AppendNestedLine(1, "{")
                 .AppendNestedLine(2, $"Task<ResultModel<{metadata.Name}>> CreateAsync({metadata.Name} entity);")
-                .AppendNestedLine(2, $"Task DeleteAsync({metadata.Name} entity);")
+                .AppendNestedLine(2, $"Task<bool> DeleteAsync({metadata.KeyProperty.TypeName} key);")
                 .AppendNestedLine(2, $"Task<{metadata.Name}> GetAsync({metadata.KeyProperty.TypeName} key);")
                 .AppendNestedLine(2, $"Task<List<{metadata.Name}>> GetAllAsync();")
                 .AppendNestedLine(2, $"Task<PageModel<{metadata.Name}>> GetAllAsync(int page, int pageSize, string sortField, bool asc);");
@@ -133,29 +133,44 @@ namespace MinionSuite.Tool.Generators
                 .AppendNestedLine(3, "_context = context;")
                 .AppendNestedLine(2, "}")
                 .AppendLine()
-                .AppendNestedLine(2, $"public virtual async Task<ResultModel<{metadata.Name}>> CreateAsync({metadata.Name} entity)")
-                .AppendNestedLine(2, "{");
+                .AppendNestedLine(2, $"public virtual async Task<ResultModel<{metadata.Name}>> CreateAsync({metadata.Name} model)")
+                .AppendNestedLine(2, "{")
+                .AppendNestedLine(3, $"var newEntity = new {metadata.Name}();")
+                .AppendLine();
 
+            foreach (var property in metadata.Properties.Where(w => w.Key != metadata.KeyName && w.Key != "CreatedAt" && w.Key != "UpdatedAt"))
+            {
+                builder.AppendNestedLine(3, $"newEntity.{property.Key} = model.{property.Key};");
+            }
             if (metadata.Properties.ContainsKey("CreatedAt"))
             {
-                builder.AppendNestedLine(3, "entity.CreatedAt = DateTime.UtcNow;");
+                builder.AppendNestedLine(3, "newEntity.CreatedAt = DateTime.UtcNow;");
             }
             if (metadata.Properties.ContainsKey("UpdatedAt"))
             {
-                builder.AppendNestedLine(3, "entity.UpdatedAt = DateTime.UtcNow;");
+                builder.AppendNestedLine(3, "newEntity.UpdatedAt = DateTime.UtcNow;");
             }
 
             builder
-                .AppendNestedLine(3, $"_context.{metadata.PluralName}.Add(entity);")
+                .AppendLine()
+                .AppendNestedLine(3, $"_context.{metadata.PluralName}.Add(newEntity);")
                 .AppendNestedLine(3, "await _context.SaveChangesAsync();")
                 .AppendLine()
-                .AppendNestedLine(3, $"return new ResultModel<{metadata.Name}>(entity);")
+                .AppendNestedLine(3, $"return new ResultModel<{metadata.Name}>(newEntity);")
                 .AppendNestedLine(2, "}")
                 .AppendLine()
-                .AppendNestedLine(2, $"public virtual Task DeleteAsync({metadata.Name} entity)")
+                .AppendNestedLine(2, $"public virtual async Task<bool> DeleteAsync({metadata.KeyProperty.TypeName} key)")
                 .AppendNestedLine(2, "{")
+                .AppendNestedLine(3, "var entity = await GetAsync(key);")
+                .AppendNestedLine(3, "if (entity == null)")
+                .AppendNestedLine(3, "{")
+                .AppendNestedLine(4, "return false;")
+                .AppendNestedLine(3, "}")
+                .AppendLine()
                 .AppendNestedLine(3, $"_context.{metadata.PluralName}.Remove(entity);")
-                .AppendNestedLine(3, "return _context.SaveChangesAsync();")
+                .AppendNestedLine(3, "await _context.SaveChangesAsync();")
+                .AppendLine()
+                .AppendNestedLine(3, "return true;")
                 .AppendNestedLine(2, "}")
                 .AppendLine()
                 .AppendNestedLine(2, $"public virtual Task<{metadata.Name}> GetAsync({metadata.KeyProperty.TypeName} key)")
@@ -196,22 +211,22 @@ namespace MinionSuite.Tool.Generators
 
             builder
                 .AppendLine()
-                .AppendNestedLine(2, $"public virtual async Task<ResultModel<{metadata.Name}>> UpdateAsync({metadata.Name} entity)")
+                .AppendNestedLine(2, $"public virtual async Task<ResultModel<{metadata.Name}>> UpdateAsync({metadata.Name} model)")
                 .AppendNestedLine(2, "{")
-                .AppendNestedLine(3, $"var existingEntity = await _context.{metadata.PluralName}.FindAsync(entity.{metadata.KeyName}).AsTask();")
+                .AppendNestedLine(3, $"var existingEntity = await GetAsync(model.Id);")
                 .AppendNestedLine(3, "if (existingEntity == null)")
                 .AppendNestedLine(3, "{")
-                .AppendNestedLine(4, $"return new ResultModel<{metadata.Name}>(\"The entity was not found.\");")
+                .AppendNestedLine(4, "return null;")
                 .AppendNestedLine(3, "}")
                 .AppendLine();
 
             foreach (var property in metadata.Properties.Where(w => w.Key != metadata.KeyName && w.Key != "CreatedAt" && w.Key != "UpdatedAt"))
             {
-                builder.AppendNestedLine(3, $"existingEntity.{property.Key} = entity.{property.Key};");
+                builder.AppendNestedLine(3, $"existingEntity.{property.Key} = model.{property.Key};");
             }
             if (metadata.Properties.ContainsKey("UpdatedAt"))
             {
-                builder.AppendNestedLine(3, "entity.UpdatedAt = DateTime.UtcNow;");
+                builder.AppendNestedLine(3, "existingEntity.UpdatedAt = DateTime.UtcNow;");
             }
 
             builder

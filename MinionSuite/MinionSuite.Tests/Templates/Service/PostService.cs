@@ -16,20 +16,35 @@ namespace MinionSuite.Tests.Templates
             _context = context;
         }
 
-        public virtual async Task<ResultModel<Post>> CreateAsync(Post entity)
+        public virtual async Task<ResultModel<Post>> CreateAsync(Post model)
         {
-            entity.CreatedAt = DateTime.UtcNow;
-            entity.UpdatedAt = DateTime.UtcNow;
-            _context.Posts.Add(entity);
+            var newEntity = new Post();
+
+            newEntity.Title = model.Title;
+            newEntity.Body = model.Body;
+            newEntity.TotalViews = model.TotalViews;
+            newEntity.Rating = model.Rating;
+            newEntity.CreatedAt = DateTime.UtcNow;
+            newEntity.UpdatedAt = DateTime.UtcNow;
+
+            _context.Posts.Add(newEntity);
             await _context.SaveChangesAsync();
 
-            return new ResultModel<Post>(entity);
+            return new ResultModel<Post>(newEntity);
         }
 
-        public virtual Task DeleteAsync(Post entity)
+        public virtual async Task<bool> DeleteAsync(int key)
         {
+            var entity = await GetAsync(key);
+            if (entity == null)
+            {
+                return false;
+            }
+
             _context.Posts.Remove(entity);
-            return _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         public virtual Task<Post> GetAsync(int key)
@@ -63,19 +78,19 @@ namespace MinionSuite.Tests.Templates
             return PageModel<Post>.CreateAsync(query, page, pageSize, sortField, asc);
         }
 
-        public virtual async Task<ResultModel<Post>> UpdateAsync(Post entity)
+        public virtual async Task<ResultModel<Post>> UpdateAsync(Post model)
         {
-            var existingEntity = await _context.Posts.FindAsync(entity.Id).AsTask();
+            var existingEntity = await GetAsync(model.Id);
             if (existingEntity == null)
             {
-                return new ResultModel<Post>("The entity was not found.");
+                return null;
             }
 
-            existingEntity.Title = entity.Title;
-            existingEntity.Body = entity.Body;
-            existingEntity.TotalViews = entity.TotalViews;
-            existingEntity.Rating = entity.Rating;
-            entity.UpdatedAt = DateTime.UtcNow;
+            existingEntity.Title = model.Title;
+            existingEntity.Body = model.Body;
+            existingEntity.TotalViews = model.TotalViews;
+            existingEntity.Rating = model.Rating;
+            existingEntity.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
