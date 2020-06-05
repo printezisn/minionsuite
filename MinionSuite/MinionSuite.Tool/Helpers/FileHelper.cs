@@ -16,6 +16,7 @@ namespace MinionSuite.Tool.Helpers
         /// <param name="content">The content to save</param>
         public static void SaveToOutput(string outputFolder, string filename, string content)
         {
+            Directory.CreateDirectory(outputFolder);
             File.WriteAllText(Path.Combine(outputFolder, filename), content);
         }
     }

@@ -10,7 +10,7 @@ namespace MinionSuite.Tests.Generators
     public class ResultModelGeneratorTests
     {
         [Fact]
-        public void TestResultModelGenerator()
+        public void TestGenerator()
         {
             var args = new string[] { "resultmodel", "-ns", "MinionSuite.Tests.Templates" };
             var argReader = new ArgReader(args);

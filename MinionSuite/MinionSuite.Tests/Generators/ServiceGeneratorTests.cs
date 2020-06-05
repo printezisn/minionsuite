@@ -10,7 +10,7 @@ namespace MinionSuite.Tests.Generators
     public class ServiceGeneratorTests
     {
         [Fact]
-        public void TestServiceGenerator()
+        public void TestGenerator()
         {
             var args = new string[]
             {

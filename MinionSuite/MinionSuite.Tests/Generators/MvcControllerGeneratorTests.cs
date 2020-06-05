@@ -10,7 +10,7 @@ namespace MinionSuite.Tests.Generators
     public class MvcControllerGeneratorTests
     {
         [Fact]
-        public void TestServiceGenerator()
+        public void TestGenerator()
         {
             var args = new string[]
             {
@@ -21,7 +21,6 @@ namespace MinionSuite.Tests.Generators
             GeneratorFactory.GetGenerator(argReader).Generate(argReader);
 
             Assert.True(File.Exists("PostsController.cs"));
-
 
             AssertHelper.AssertEqualFile("Templates/Controllers/PostsController.cs", "PostsController.cs");
         }

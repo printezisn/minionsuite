@@ -7,23 +7,23 @@ using Xunit;
 
 namespace MinionSuite.Tests.Generators
 {
-    public class ServiceTestGeneratorTests
+    public class ApiControllerGeneratorTests
     {
         [Fact]
         public void TestGenerator()
         {
             var args = new string[]
             {
-                "servicegen:test", "-ns", "MinionSuite.Tests.Templates",
-                "-m", "./Models/Post.cs", "-db", "ApplicationContext"
+                "apicontroller", "-ns", "MinionSuite.Tests.Templates.Controllers.Api",
+                "-m", "./Models/Post.cs", "-o", "Api"
             };
             var argReader = new ArgReader(args);
 
             GeneratorFactory.GetGenerator(argReader).Generate(argReader);
 
-            Assert.True(File.Exists("PostServiceTests.cs"));
+            Assert.True(File.Exists("Api/PostsController.cs"));
 
-            AssertHelper.AssertEqualFile("Templates/ServiceTest/PostServiceTests.cs", "PostServiceTests.cs");
+            AssertHelper.AssertEqualFile("Templates/Controllers/Api/PostsController.cs", "Api/PostsController.cs");
         }
     }
 }
