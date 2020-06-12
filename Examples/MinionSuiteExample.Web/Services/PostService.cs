@@ -48,7 +48,7 @@ namespace MinionSuiteExample.Web.Services
 
         public virtual Task<Post> GetAsync(int key)
         {
-            return _context.Posts.FindAsync(key).AsTask();
+            return _context.Posts.FirstOrDefaultAsync(f => f.Id == key);
         }
 
         public virtual Task<List<Post>> GetAllAsync()

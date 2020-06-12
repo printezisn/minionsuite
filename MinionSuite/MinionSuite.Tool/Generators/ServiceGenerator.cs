@@ -175,7 +175,7 @@ namespace MinionSuite.Tool.Generators
                 .AppendLine()
                 .AppendNestedLine(2, $"public virtual Task<{metadata.Name}> GetAsync({metadata.KeyProperty.TypeName} key)")
                 .AppendNestedLine(2, "{")
-                .AppendNestedLine(3, $"return _context.{metadata.PluralName}.FindAsync(key).AsTask();")
+                .AppendNestedLine(3, $"return _context.{metadata.PluralName}.FirstOrDefaultAsync(f => f.{metadata.KeyName} == key);")
                 .AppendNestedLine(2, "}")
                 .AppendLine()
                 .AppendNestedLine(2, $"public virtual Task<List<{metadata.Name}>> GetAllAsync()")
