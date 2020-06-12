@@ -24,6 +24,7 @@ namespace MinionSuite.Tests.Templates
             newEntity.Body = model.Body;
             newEntity.TotalViews = model.TotalViews;
             newEntity.Rating = model.Rating;
+            newEntity.Signature = model.Signature;
             newEntity.CreatedAt = DateTime.UtcNow;
             newEntity.UpdatedAt = DateTime.UtcNow;
 
@@ -90,6 +91,7 @@ namespace MinionSuite.Tests.Templates
             existingEntity.Body = model.Body;
             existingEntity.TotalViews = model.TotalViews;
             existingEntity.Rating = model.Rating;
+            existingEntity.Signature = model.Signature;
             existingEntity.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
@@ -132,6 +134,14 @@ namespace MinionSuite.Tests.Templates
                             .ThenBy(o => o.Id)
                         : query
                             .OrderByDescending(o => o.Rating)
+                            .ThenBy(o => o.Id);
+                case "Signature":
+                    return asc
+                        ? query
+                            .OrderBy(o => o.Signature)
+                            .ThenBy(o => o.Id)
+                        : query
+                            .OrderByDescending(o => o.Signature)
                             .ThenBy(o => o.Id);
                 case "CreatedAt":
                     return asc

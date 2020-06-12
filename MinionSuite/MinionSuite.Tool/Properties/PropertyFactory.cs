@@ -42,6 +42,10 @@ namespace MinionSuite.Tool.Properties
             {
                 return new TimeSpanProperty(name, typeName);
             }
+            if (GuidProperty.SUPPORTED_TYPES.Contains(typeName))
+            {
+                return new GuidProperty(name, typeName);
+            }
 
             return null;
         }

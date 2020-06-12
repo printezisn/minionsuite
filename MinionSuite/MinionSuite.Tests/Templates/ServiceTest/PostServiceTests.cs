@@ -40,6 +40,7 @@ namespace MinionSuite.Tests.Templates
             Assert.Equal(entity.Body, entities[0].Body);
             Assert.Equal(entity.TotalViews, entities[0].TotalViews);
             Assert.Equal(entity.Rating, entities[0].Rating);
+            Assert.Equal(entity.Signature, entities[0].Signature);
         }
 
         [Fact]
@@ -132,6 +133,7 @@ namespace MinionSuite.Tests.Templates
                 Body = _entitySequence.ToString(),
                 TotalViews = _entitySequence,
                 Rating = _entitySequence,
+                Signature = Guid.NewGuid(),
             };
 
             var result = await _service.CreateAsync(entity);
