@@ -21,6 +21,7 @@ namespace MinionSuite.Tool.Generators
                 "pagemodel" => new PageModelGenerator(),
                 "resultmodel" => new ResultModelGenerator(),
                 "mvccontroller" => new MvcControllerGenerator(),
+                "mvccontroller:test" => new MvcControllerTestGenerator(),
                 "apicontroller" => new ApiControllerGenerator(),
                 _ => throw new ArgumentException($"{argReader.Generator} is an invalid generator."),
             };

@@ -1,0 +1,234 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using Xunit;
+
+namespace MinionSuite.Tests.Templates
+{
+    public class PostsControllerTests : IClassFixture<CustomWebApplicationFactory>
+    {
+        private readonly CustomWebApplicationFactory _factory;
+        private readonly HttpClient _client;
+        private readonly IServiceScope _scope;
+        private readonly IPostService _service;
+
+        public PostsControllerTests(CustomWebApplicationFactory factory)
+        {
+            _factory = factory;
+            _client = _factory.CreateClient(new WebApplicationFactoryClientOptions
+            {
+                AllowAutoRedirect = false
+            });
+
+            _scope = _factory.Services.CreateScope();
+            _service = _scope.ServiceProvider.GetRequiredService<IPostService>();
+        }
+
+        [Fact]
+        public async Task Index_Get_Successful()
+        {
+            var entity = await BuildEntity(true);
+
+            var response = await _client.GetAsync($"/Posts?asc=false");
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains($"Posts/Details/{entity.Id}", content);
+        }
+
+        [Fact]
+        public async Task Index_Get_SearchSuccessful()
+        {
+            var firstEntity = await BuildEntity(true);
+            var secondEntity = await BuildEntity(true);
+
+            var response = await _client.GetAsync($"/Posts?term={HttpUtility.UrlEncode(firstEntity.Title)}");
+            var content = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains($"Posts/Details/{firstEntity.Id}", content);
+            Assert.DoesNotContain($"Posts/Details/{secondEntity.Id}", content);
+        }
+
+        [Fact]
+        public async Task Details_Get_NotFound()
+        {
+            var response = await _client.GetAsync("/Posts/Details/0");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Details_Get_Successful()
+        {
+            var entity = await BuildEntity(true);
+            var response = await _client.GetAsync($"/Posts/Details/{entity.Id}");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Create_Get_Successful()
+        {
+            var response = await _client.GetAsync("/Posts/Create");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Create_Post_Successful()
+        {
+            var verificationToken = await GetVerificationTokenFromPage("/Posts/Create");
+
+            var entity = await BuildEntity(false);
+            var dict = EntityToDictionary(entity);
+            dict["__RequestVerificationToken"] = verificationToken;
+            var formContent = new FormUrlEncodedContent(dict);
+
+            var response = await _client.PostAsync("/Posts/Create", formContent);
+            var createdEntity = await FetchEntityFromDetailsUrl(response.Headers.Location.ToString());
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.NotNull(createdEntity);
+            Assert.Equal(entity.Title, createdEntity.Title);
+            Assert.Equal(entity.Body, createdEntity.Body);
+            Assert.Equal(entity.TotalViews, createdEntity.TotalViews);
+            Assert.Equal(entity.Rating, createdEntity.Rating);
+            Assert.Equal(entity.Signature, createdEntity.Signature);
+        }
+
+        [Fact]
+        public async Task Edit_Get_NotFound()
+        {
+            var response = await _client.GetAsync("/Posts/Edit/0");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Edit_Get_Successful()
+        {
+            var entity = await BuildEntity(true);
+            var response = await _client.GetAsync($"/Posts/Edit/{entity.Id}");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Edit_Post_Successful()
+        {
+            var entity = await BuildEntity(true);
+            var verificationToken = await GetVerificationTokenFromPage($"/Posts/Edit/{entity.Id}");
+
+            var dict = EntityToDictionary(await BuildEntity(false));
+            dict["Id"] = entity.Id.ToString();
+            dict["__RequestVerificationToken"] = verificationToken;
+            var formContent = new FormUrlEncodedContent(dict);
+
+            var response = await _client.PostAsync("/Posts/Edit", formContent);
+            var updatedEntity = await _service.GetAsync(entity.Id);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.NotNull(updatedEntity);
+            Assert.Equal(entity.Title, updatedEntity.Title);
+            Assert.Equal(entity.Body, updatedEntity.Body);
+            Assert.Equal(entity.TotalViews, updatedEntity.TotalViews);
+            Assert.Equal(entity.Rating, updatedEntity.Rating);
+            Assert.Equal(entity.Signature, updatedEntity.Signature);
+        }
+
+        [Fact]
+        public async Task Delete_Get_NotFound()
+        {
+            var response = await _client.GetAsync("/Posts/Delete/0");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Delete_Get_Successful()
+        {
+            var entity = await BuildEntity(true);
+            var response = await _client.GetAsync($"/Posts/Delete/{entity.Id}");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Delete_Post_Successful()
+        {
+            var entity = await BuildEntity(true);
+            var verificationToken = await GetVerificationTokenFromPage($"/Posts/Delete/{entity.Id}");
+
+            var dict = new Dictionary<string, string>
+            {
+                ["Id"] = entity.Id.ToString(),
+                ["__RequestVerificationToken"] = verificationToken
+            };
+            var formContent = new FormUrlEncodedContent(dict);
+
+            var response = await _client.PostAsync("/Posts/Delete", formContent);
+            entity = await _service.GetAsync(entity.Id);
+
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Null(entity);
+        }
+
+        private async Task<Post> BuildEntity(bool save)
+        {
+            var entity = new Post()
+            {
+                Title = Guid.NewGuid().ToString(),
+                Body = Guid.NewGuid().ToString(),
+                TotalViews = 1,
+                Rating = 1,
+                Signature = Guid.NewGuid(),
+            };
+
+            if (save)
+            {
+                var result = await _service.CreateAsync(entity);
+                return result.Result;
+            }
+
+            return entity;
+        }
+
+        private Dictionary<string, string> EntityToDictionary(Post entity)
+        {
+            var jsonContent = JsonConvert.SerializeObject(entity);
+            return JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonContent);
+        }
+
+        private async Task<string> GetVerificationTokenFromPage(string pageUrl)
+        {
+            var response = await _client.GetAsync(pageUrl);
+            var content = await response.Content.ReadAsStringAsync();
+            var verificationTokenMatch = Regex.Match(content, "name=\"__RequestVerificationToken\"(.*?)value=\"(.+?)\"");
+
+            Assert.True(verificationTokenMatch.Success);
+
+            return verificationTokenMatch.Groups[2].Value;
+        }
+
+        private async Task<Post> FetchEntityFromDetailsUrl(string url)
+        {
+            var match = Regex.Match(url, "/Posts/Details/(.+)");
+            if (!match.Success)
+            {
+                return null;
+            }
+
+            var key = int.Parse(match.Groups[1].Value);
+            return await _service.GetAsync(key);
+        }
+    }
+}

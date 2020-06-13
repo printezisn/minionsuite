@@ -43,5 +43,14 @@ namespace MinionSuite.Tool.Properties
         {
             return $"new TimeSpan({sequenceVariable} % 24, 0, 0)";
         }
+
+        /// <summary>
+        /// A default value
+        /// </summary>
+        /// <returns>The default value</returns>
+        public string DefaultValue()
+        {
+            return "DateTime.UtcNow.TimeOfDay";
+        }
     }
 }

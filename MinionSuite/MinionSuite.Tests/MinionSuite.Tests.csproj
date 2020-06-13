@@ -27,8 +27,8 @@
     <Folder Include="Templates\Service\" />
     <Folder Include="Models\" />
     <Folder Include="Templates\ServiceTest\" />
-    <Folder Include="Templates\Controllers\" />
-    <Folder Include="Templates\Controllers\Api\" />
+    <Folder Include="Templates\MvcController\" />
+    <Folder Include="Templates\ApiController\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Templates\PageModel\IPageModel.cs">
@@ -52,11 +52,19 @@
     <Compile Update="Templates\ServiceTest\PostServiceTests.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
-    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Templates\Controllers\PostsController.cs">
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Templates\MvcController\PostsController.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
-    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Templates\Controllers\Api\PostsController.cs">
+    <Compile Condition=" '$(EnableDefaultCompileItems)' == 'true' " Update="Templates\ApiController\PostsController.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Templates\MvcControllerTest\PostsControllerTests.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Templates\MvcControllerTest\CustomWebApplicationFactory.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

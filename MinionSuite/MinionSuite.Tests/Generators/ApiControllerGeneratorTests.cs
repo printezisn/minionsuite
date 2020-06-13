@@ -23,7 +23,7 @@ namespace MinionSuite.Tests.Generators
 
             Assert.True(File.Exists("Api/PostsController.cs"));
 
-            AssertHelper.AssertEqualFile("Templates/Controllers/Api/PostsController.cs", "Api/PostsController.cs");
+            AssertHelper.AssertEqualFile("Templates/ApiController/PostsController.cs", "Api/PostsController.cs");
         }
     }
 }

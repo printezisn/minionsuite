@@ -36,6 +36,11 @@ namespace MinionSuite.Tool
         public bool GenerateResultModel { get; private set; }
 
         /// <summary>
+        /// Indicates if a web application factory must be generated
+        /// </summary>
+        public bool GenerateWebApplicationFactory { get; private set; }
+
+        /// <summary>
         /// The database context class
         /// </summary>
         public string DbContext { get; private set; } = "ApplicationDbContext";
@@ -84,6 +89,10 @@ namespace MinionSuite.Tool
                 else if (args[i] == "-grm" || args[i] == "--generate-result-model")
                 {
                     GenerateResultModel = true;
+                }
+                else if (args[i] == "-gwaf" || args[i] == "--generate-web-application-factory")
+                {
+                    GenerateWebApplicationFactory = true;
                 }
                 else if (args[i] == "-db" || args[i] == "--db-context")
                 {

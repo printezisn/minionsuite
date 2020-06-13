@@ -46,5 +46,14 @@ namespace MinionSuite.Tool.Properties
         {
             return sequenceVariable;
         }
+
+        /// <summary>
+        /// A default value
+        /// </summary>
+        /// <returns>The default value</returns>
+        public string DefaultValue()
+        {
+            return "1";
+        }
     }
 }

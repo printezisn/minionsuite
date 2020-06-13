@@ -22,5 +22,11 @@ namespace MinionSuite.Tool.Properties
         /// <param name="sequenceVariable">The name of the sequence variable</param>
         /// <returns>The sequence value</returns>
         string SequenceValue(string sequenceVariable);
+
+        /// <summary>
+        /// A default value
+        /// </summary>
+        /// <returns>The default value</returns>
+        string DefaultValue();
     }
 }

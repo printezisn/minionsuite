@@ -43,5 +43,14 @@ namespace MinionSuite.Tool.Properties
         {
             return "Guid.NewGuid()";
         }
+
+        /// <summary>
+        /// A default value
+        /// </summary>
+        /// <returns>The default value</returns>
+        public string DefaultValue()
+        {
+            return "Guid.NewGuid()";
+        }
     }
 }
