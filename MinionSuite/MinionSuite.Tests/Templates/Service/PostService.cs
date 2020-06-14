@@ -55,7 +55,7 @@ namespace MinionSuite.Tests.Templates
 
         public virtual Task<List<Post>> GetAllAsync()
         {
-            return _context.Posts.ToListAsync();
+            return _context.Posts.AsNoTracking().ToListAsync();
         }
 
         public virtual Task<PageModel<Post>> GetAllAsync(int page, int pageSize, string sortField, bool asc)
@@ -68,7 +68,7 @@ namespace MinionSuite.Tests.Templates
 
         public virtual Task<List<Post>> SearchAsync(string term)
         {
-            return _context.Posts.Where(w => w.Title.Contains(term) || w.Body.Contains(term)).ToListAsync();
+            return _context.Posts.AsNoTracking().Where(w => w.Title.Contains(term) || w.Body.Contains(term)).ToListAsync();
         }
 
         public virtual Task<PageModel<Post>> SearchAsync(string term, int page, int pageSize, string sortField, bool asc)

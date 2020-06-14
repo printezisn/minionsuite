@@ -17,7 +17,7 @@ namespace MinionSuite.Tests.Templates
         public PostServiceTests()
         {
             var options = new DbContextOptionsBuilder<ApplicationContext>()
-                .UseInMemoryDatabase("Application")
+                .UseInMemoryDatabase("PostService")
                 .Options;
             _context = new ApplicationContext(options);
             _service = new PostService(_context);

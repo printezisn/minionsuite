@@ -47,7 +47,7 @@ namespace MinionSuite.Tool.Generators
                 .AppendNestedLine(2, $"public {metadata.Name}ServiceTests()")
                 .AppendNestedLine(2, "{")
                 .AppendNestedLine(3, $"var options = new DbContextOptionsBuilder<{argReader.DbContext}>()")
-                .AppendNestedLine(4, ".UseInMemoryDatabase(\"Application\")")
+                .AppendNestedLine(4, $".UseInMemoryDatabase(\"{metadata.Name}Service\")")
                 .AppendNestedLine(4, ".Options;")
                 .AppendNestedLine(3, $"_context = new {argReader.DbContext}(options);")
                 .AppendNestedLine(3, $"_service = new {metadata.Name}Service(_context);")
