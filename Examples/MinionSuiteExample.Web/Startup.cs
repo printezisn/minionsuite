@@ -32,6 +32,7 @@ namespace MinionSuiteExample.Web
                 options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<IPostService, PostService>();
+            services.AddScoped<ICommentService, CommentService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

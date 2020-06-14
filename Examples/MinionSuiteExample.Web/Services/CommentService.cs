@@ -8,28 +8,33 @@ using MinionSuiteExample.Web.Models;
 
 namespace MinionSuiteExample.Web.Services
 {
-    public class PostService : IPostService
+    public class CommentService : ICommentService
     {
         private readonly ApplicationDbContext _context;
 
-        public PostService(ApplicationDbContext context)
+        public CommentService(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        public virtual async Task<ResultModel<Post>> CreateAsync(Post model)
+        public virtual async Task<ResultModel<Comment>> CreateAsync(Comment model)
         {
-            var newEntity = new Post();
+            if (!await _context.Posts.AnyAsync(a => a.Id == model.PostId))
+            {
+                return new ResultModel<Comment>("The post was not found.");
+            }
 
-            newEntity.Title = model.Title;
+            var newEntity = new Comment();
+
             newEntity.Body = model.Body;
+            newEntity.PostId = model.PostId;
             newEntity.CreatedAt = DateTime.UtcNow;
             newEntity.UpdatedAt = DateTime.UtcNow;
 
-            _context.Posts.Add(newEntity);
+            _context.Comments.Add(newEntity);
             await _context.SaveChangesAsync();
 
-            return new ResultModel<Post>(newEntity);
+            return new ResultModel<Comment>(newEntity);
         }
 
         public virtual async Task<bool> DeleteAsync(int key)
@@ -40,44 +45,46 @@ namespace MinionSuiteExample.Web.Services
                 return false;
             }
 
-            _context.Posts.Remove(entity);
+            _context.Comments.Remove(entity);
             await _context.SaveChangesAsync();
 
             return true;
         }
 
-        public virtual Task<Post> GetAsync(int key)
+        public virtual Task<Comment> GetAsync(int key)
         {
-            return _context.Posts.FirstOrDefaultAsync(f => f.Id == key);
+            return _context.Comments.FirstOrDefaultAsync(f => f.Id == key);
         }
 
-        public virtual Task<List<Post>> GetAllAsync()
+        public virtual Task<List<Comment>> GetAllAsync(int postId)
         {
-            return _context.Posts.ToListAsync();
+            return _context.Comments.AsNoTracking().Where(w => w.PostId == postId).ToListAsync();
         }
 
-        public virtual Task<PageModel<Post>> GetAllAsync(int page, int pageSize, string sortField, bool asc)
+        public virtual Task<PageModel<Comment>> GetAllAsync(int postId, int page, int pageSize, string sortField, bool asc)
         {
-            var query = _context.Posts.AsNoTracking();
+            var query = _context.Comments.AsNoTracking().Where(w => w.PostId == postId);
             query = GetSortedQuery(query, sortField, asc);
 
-            return PageModel<Post>.CreateAsync(query, page, pageSize, sortField, asc);
+            return PageModel<Comment>.CreateAsync(query, page, pageSize, sortField, asc);
         }
 
-        public virtual Task<List<Post>> SearchAsync(string term)
+        public virtual Task<List<Comment>> SearchAsync(int postId, string term)
         {
-            return _context.Posts.Where(w => w.Title.Contains(term) || w.Body.Contains(term)).ToListAsync();
+            var query = _context.Comments.AsNoTracking().Where(w => w.PostId == postId);
+            return query.Where(w => w.Body.Contains(term)).ToListAsync();
         }
 
-        public virtual Task<PageModel<Post>> SearchAsync(string term, int page, int pageSize, string sortField, bool asc)
+        public virtual Task<PageModel<Comment>> SearchAsync(int postId, string term, int page, int pageSize, string sortField, bool asc)
         {
-            var query = _context.Posts.AsNoTracking().Where(w => w.Title.Contains(term) || w.Body.Contains(term));
+            var query = _context.Comments.AsNoTracking().Where(w => w.PostId == postId);
+            query = query.Where(w => w.Body.Contains(term));
             query = GetSortedQuery(query, sortField, asc);
 
-            return PageModel<Post>.CreateAsync(query, page, pageSize, sortField, asc);
+            return PageModel<Comment>.CreateAsync(query, page, pageSize, sortField, asc);
         }
 
-        public virtual async Task<ResultModel<Post>> UpdateAsync(Post model)
+        public virtual async Task<ResultModel<Comment>> UpdateAsync(Comment model)
         {
             var existingEntity = await GetAsync(model.Id);
             if (existingEntity == null)
@@ -85,27 +92,18 @@ namespace MinionSuiteExample.Web.Services
                 return null;
             }
 
-            existingEntity.Title = model.Title;
             existingEntity.Body = model.Body;
             existingEntity.UpdatedAt = DateTime.UtcNow;
 
             await _context.SaveChangesAsync();
 
-            return new ResultModel<Post>(existingEntity);
+            return new ResultModel<Comment>(existingEntity);
         }
 
-        protected virtual IQueryable<Post> GetSortedQuery(IQueryable<Post> query, string sortField, bool asc)
+        protected virtual IQueryable<Comment> GetSortedQuery(IQueryable<Comment> query, string sortField, bool asc)
         {
             switch (sortField)
             {
-                case "Title":
-                    return asc
-                        ? query
-                            .OrderBy(o => o.Title)
-                            .ThenBy(o => o.Id)
-                        : query
-                            .OrderByDescending(o => o.Title)
-                            .ThenBy(o => o.Id);
                 case "CreatedAt":
                     return asc
                         ? query

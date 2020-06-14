@@ -9,20 +9,20 @@ using Xunit;
 
 namespace MinionSuiteExample.Tests.Services
 {
-    public class PostServiceTests : IDisposable
+    public class CommentServiceTests : IDisposable
     {
         private int _entitySequence = 1;
 
         private ApplicationDbContext _context;
-        private PostService _service;
+        private CommentService _service;
 
-        public PostServiceTests()
+        public CommentServiceTests()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase("PostService")
+                .UseInMemoryDatabase("CommentService")
                 .Options;
             _context = new ApplicationDbContext(options);
-            _service = new PostService(_context);
+            _service = new CommentService(_context);
         }
 
         public void Dispose()
@@ -35,11 +35,25 @@ namespace MinionSuiteExample.Tests.Services
         public async Task TestCreateAndReturnEntities()
         {
             var entity = await CreateEntity();
-            var entities = await _service.GetAllAsync();
+            var entities = await _service.GetAllAsync(entity.PostId);
 
             Assert.Single(entities);
-            Assert.Equal(entity.Title, entities[0].Title);
             Assert.Equal(entity.Body, entities[0].Body);
+            Assert.Equal(entity.PostId, entities[0].PostId);
+        }
+
+        [Fact]
+        public async Task TestCreateWithNonExistingPost()
+        {
+            var entity = new Comment()
+            {
+                Body = _entitySequence.ToString(),
+            };
+
+            var result = await _service.CreateAsync(entity);
+
+            Assert.False(result.IsSuccess);
+            Assert.Contains("The post was not found.", result.Errors);
         }
 
         [Fact]
@@ -47,19 +61,19 @@ namespace MinionSuiteExample.Tests.Services
         {
             var entity = await CreateEntity();
 
-            entity.Title = _entitySequence.ToString();
+            entity.Body = _entitySequence.ToString();
             await _service.UpdateAsync(entity);
 
             entity = await _service.GetAsync(entity.Id);
 
             Assert.NotNull(entity);
-            Assert.Equal(_entitySequence.ToString(), entity.Title);
+            Assert.Equal(_entitySequence.ToString(), entity.Body);
         }
 
         [Fact]
         public async Task TestUpdateNotExistingEntity()
         {
-            var entity = new Post()
+            var entity = new Comment()
             {
                 Id = _entitySequence
             };
@@ -84,25 +98,26 @@ namespace MinionSuiteExample.Tests.Services
         public async Task TestPagingAndSorting()
         {
             await CreateEntity();
-            var entity = await CreateEntity();
+            var firstEntity = await CreateEntity();
+            var secondEntity = await CreateEntity(firstEntity.PostId);
 
-            var page = await _service.GetAllAsync(1, 1, "Title", false);
+            var page = await _service.GetAllAsync(firstEntity.PostId, 1, 1, "CreatedAt", false);
 
             Assert.Equal(2, page.TotalItems);
             Assert.Equal(1, page.Page);
             Assert.Equal(1, page.PageSize);
-            Assert.Equal("Title", page.SortField);
+            Assert.Equal("CreatedAt", page.SortField);
             Assert.False(page.IsAscending);
-            Assert.Equal(entity.Id, page.First().Id);
+            Assert.Equal(secondEntity.Id, page.First().Id);
         }
 
         [Fact]
         public async Task TestSearch()
         {
-            await CreateEntity();
             var entity = await CreateEntity();
+            await CreateEntity(entity.PostId);
 
-            var entities = await _service.SearchAsync(entity.Title);
+            var entities = await _service.SearchAsync(entity.PostId, entity.Body);
 
             Assert.Single(entities);
             Assert.Equal(entity.Id, entities.First().Id);
@@ -111,10 +126,10 @@ namespace MinionSuiteExample.Tests.Services
         [Fact]
         public async Task TestSearchWithPagingAndSorting()
         {
-            await CreateEntity();
             var entity = await CreateEntity();
+            await CreateEntity(entity.PostId);
 
-            var page = await _service.SearchAsync(entity.Title, 1, 1, "Id", false);
+            var page = await _service.SearchAsync(entity.PostId, entity.Body, 1, 1, "Id", false);
 
             Assert.Equal(1, page.TotalItems);
             Assert.Equal(1, page.Page);
@@ -124,12 +139,21 @@ namespace MinionSuiteExample.Tests.Services
             Assert.Equal(entity.Id, page.First().Id);
         }
 
-        private async Task<Post> CreateEntity()
+        private async Task<Comment> CreateEntity(int? postId = null)
         {
-            var entity = new Post()
+            if (!postId.HasValue)
             {
-                Title = _entitySequence.ToString(),
+                var post = new Post();
+                _context.Posts.Add(post);
+                await _context.SaveChangesAsync();
+
+                postId = post.Id;
+            }
+
+            var entity = new Comment()
+            {
                 Body = _entitySequence.ToString(),
+                PostId = postId.Value,
             };
 
             var result = await _service.CreateAsync(entity);

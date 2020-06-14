@@ -1,19 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace MinionSuiteExample.Web.Models
 {
-    public class Post
+    public class Comment
     {
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(250)]
-        public string Title { get; set; }
+        public string Body { get; set; }
 
         [Required]
-        public string Body { get; set; }
+        public int PostId { get; set; }
 
         [Display(Name = "Created At")]
         public DateTime CreatedAt { get; set; }
@@ -21,6 +19,6 @@ namespace MinionSuiteExample.Web.Models
         [Display(Name = "Updated At")]
         public DateTime UpdatedAt { get; set; }
 
-        public IList<Comment> Comments { get; set; }
+        public Post Post { get; set; }
     }
 }
